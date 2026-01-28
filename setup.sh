@@ -71,6 +71,22 @@ declare -a BROWSER_CONFIGS=(
     "Opera GX|com.operasoftware.OperaGX|opera-gx"
     "Sidekick|Sidekick|Sidekick"
     "Orion|Orion|Orion"
+    "Yandex|Yandex/YandexBrowser|yandex-browser"
+    "Naver Whale|Naver/Whale|naver-whale"
+    "Coc Coc|CocCoc/Browser|coccoc"
+    "Comodo Dragon|Comodo/Dragon|comodo-dragon"
+    "Avast Secure Browser|AVAST Software/Browser|avast-secure-browser"
+    "AVG Secure Browser|AVG/Browser|avg-secure-browser"
+    "Epic Privacy Browser|Epic Privacy Browser|epic"
+    "Torch|Torch|torch"
+    "Slimjet|Slimjet|slimjet"
+    "SRWare Iron|Chromium|iron"
+    "Ungoogled Chromium|Chromium|ungoogled-chromium"
+    "Cent Browser|CentBrowser|cent-browser"
+    "Maxthon|Maxthon|maxthon"
+    "Iridium|Iridium|iridium-browser"
+    "Falkon|falkon|falkon"
+    "Colibri|Nickolabs/Colibri|colibri"
 )
 
 # Get Application Support base path

@@ -33,7 +33,21 @@ $BROWSER_CONFIGS = @(
     @{ Name = "Opera"; Path = "Opera Software\Opera Stable" },
     @{ Name = "Opera GX"; Path = "Opera Software\Opera GX Stable" },
     @{ Name = "Genspark"; Path = "GensparkSoftware\Genspark-Browser\User Data" },
-    @{ Name = "Google Chrome"; Path = "Google\Chrome\User Data" }
+    @{ Name = "Google Chrome"; Path = "Google\Chrome\User Data" },
+    @{ Name = "Yandex"; Path = "Yandex\YandexBrowser\User Data" },
+    @{ Name = "Naver Whale"; Path = "Naver\Whale\User Data" },
+    @{ Name = "Coc Coc"; Path = "CocCoc\Browser\User Data" },
+    @{ Name = "Comodo Dragon"; Path = "Comodo\Dragon\User Data" },
+    @{ Name = "Avast Secure Browser"; Path = "AVAST Software\Browser\User Data" },
+    @{ Name = "AVG Secure Browser"; Path = "AVG\Browser\User Data" },
+    @{ Name = "Epic Privacy Browser"; Path = "Epic Privacy Browser\User Data" },
+    @{ Name = "Torch"; Path = "Torch\User Data" },
+    @{ Name = "Slimjet"; Path = "Slimjet\User Data" },
+    @{ Name = "SRWare Iron"; Path = "Chromium\User Data" },
+    @{ Name = "Cent Browser"; Path = "CentBrowser\User Data" },
+    @{ Name = "Maxthon"; Path = "Maxthon\User Data" },
+    @{ Name = "Iridium"; Path = "Iridium\User Data" },
+    @{ Name = "Sidekick"; Path = "Sidekick\User Data" }
 )
 
 function Get-AppDataBase {

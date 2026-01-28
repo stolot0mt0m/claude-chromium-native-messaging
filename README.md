@@ -54,11 +54,26 @@ This tool automatically configures Native Messaging Host for your Chromium brows
 | **Arc** | ✅ | — | — |
 | **Vivaldi** | ✅ | ✅ | ✅ |
 | **Microsoft Edge** | ✅ | ✅ | ✅ |
-| **Chromium** | ✅ | ✅ | ✅ |
-| **Genspark** | ✅ | ✅ | ✅ |
 | **Opera / Opera GX** | ✅ | ✅ | ✅ |
+| **Chromium** | ✅ | ✅ | ✅ |
+| **Ungoogled Chromium** | ✅ | ✅ | ✅ |
+| **Yandex Browser** | ✅ | ✅ | ✅ |
+| **Naver Whale** | ✅ | ✅ | ✅ |
+| **Coc Coc** | ✅ | ✅ | ✅ |
+| **Comodo Dragon** | ✅ | ✅ | ✅ |
+| **Avast Secure Browser** | ✅ | ✅ | ✅ |
+| **AVG Secure Browser** | ✅ | ✅ | ✅ |
+| **Epic Privacy Browser** | ✅ | ✅ | ✅ |
+| **SRWare Iron** | ✅ | ✅ | ✅ |
+| **Torch** | ✅ | ✅ | ✅ |
+| **Slimjet** | ✅ | ✅ | ✅ |
+| **Cent Browser** | ✅ | ✅ | ✅ |
+| **Maxthon** | ✅ | ✅ | ✅ |
+| **Iridium** | ✅ | ✅ | ✅ |
 | **Sidekick** | ✅ | ✅ | ✅ |
-| **Custom browsers** | ✅ | ✅ | ✅ |
+| **Genspark** | ✅ | ✅ | ✅ |
+| **Falkon** | ✅ | ✅ | — |
+| **Colibri** | ✅ | ✅ | — |
 
 Your browser not listed? The script supports custom paths — any Chromium-based browser should work.
 
