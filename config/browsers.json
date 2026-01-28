@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "description": "Browser configuration for Claude Native Messaging setup scripts",
+  "extension_ids": {
+    "official": {
+      "id": "fcoeoabgfenejglbffodgkkbkcdhcgfn",
+      "description": "Official Claude extension from Chrome Web Store"
+    },
+    "development": {
+      "id": "dihbgbndebgnbjfmelmegjepbnkhlgni",
+      "description": "Development/internal extension"
+    },
+    "staging": {
+      "id": "dngcpimnedloihjnnfngkgjoidhnaolf",
+      "description": "Staging extension"
+    }
+  },
+  "claude_paths": {
+    "macos": {
+      "desktop": "/Applications/Claude.app/Contents/Helpers/chrome-native-host",
+      "code": "$HOME/.claude/chrome/chrome-native-host"
+    },
+    "linux": {
+      "desktop": [
+        "/opt/Claude/chrome-native-host",
+        "/usr/lib/claude/chrome-native-host",
+        "$HOME/.local/share/Claude/chrome-native-host",
+        "/snap/claude/current/chrome-native-host",
+        "$HOME/.var/app/ai.anthropic.claude/chrome-native-host"
+      ],
+      "code": "$HOME/.claude/chrome/chrome-native-host"
+    },
+    "windows": {
+      "desktop": [
+        "%LOCALAPPDATA%\\Programs\\claude\\resources\\chrome-native-host.exe",
+        "%LOCALAPPDATA%\\Claude\\chrome-native-host.exe",
+        "%PROGRAMFILES%\\Claude\\chrome-native-host.exe",
+        "%PROGRAMFILES(X86)%\\Claude\\chrome-native-host.exe"
+      ],
+      "code": "%USERPROFILE%\\.claude\\chrome\\chrome-native-host.exe"
+    }
+  },
+  "browsers": [
+    {
+      "name": "Brave",
+      "paths": {
+        "macos": "BraveSoftware/Brave-Browser",
+        "linux": "BraveSoftware/Brave-Browser",
+        "windows": "BraveSoftware\\Brave-Browser\\User Data"
+      }
+    },
+    {
+      "name": "Arc",
+      "paths": {
+        "macos": "Arc/User Data",
+        "linux": null,
+        "windows": null
+      }
+    },
+    {
+      "name": "Vivaldi",
+      "paths": {
+        "macos": "Vivaldi",
+        "linux": "vivaldi",
+        "windows": "Vivaldi\\User Data"
+      }
+    },
+    {
+      "name": "Microsoft Edge",
+      "paths": {
+        "macos": "Microsoft Edge",
+        "linux": "microsoft-edge",
+        "windows": "Microsoft\\Edge\\User Data"
+      }
+    },
+    {
+      "name": "Chromium",
+      "paths": {
+        "macos": "Chromium",
+        "linux": "chromium",
+        "windows": "Chromium\\User Data"
+      }
+    },
+    {
+      "name": "Google Chrome",
+      "paths": {
+        "macos": "Google/Chrome",
+        "linux": "google-chrome",
+        "windows": "Google\\Chrome\\User Data"
+      }
+    },
+    {
+      "name": "Genspark",
+      "paths": {
+        "macos": "GensparkSoftware/Genspark-Browser",
+        "linux": "GensparkSoftware/Genspark-Browser",
+        "windows": "GensparkSoftware\\Genspark-Browser\\User Data"
+      }
+    },
+    {
+      "name": "Opera",
+      "paths": {
+        "macos": "com.operasoftware.Opera",
+        "linux": "opera",
+        "windows": "Opera Software\\Opera Stable"
+      }
+    },
+    {
+      "name": "Opera GX",
+      "paths": {
+        "macos": "com.operasoftware.OperaGX",
+        "linux": "opera-gx",
+        "windows": "Opera Software\\Opera GX Stable"
+      }
+    },
+    {
+      "name": "Sidekick",
+      "paths": {
+        "macos": "Sidekick",
+        "linux": "Sidekick",
+        "windows": "Sidekick\\User Data"
+      }
+    },
+    {
+      "name": "Orion",
+      "paths": {
+        "macos": "Orion",
+        "linux": "Orion",
+        "windows": null
+      }
+    },
+    {
+      "name": "Yandex",
+      "paths": {
+        "macos": "Yandex/YandexBrowser",
+        "linux": "yandex-browser",
+        "windows": "Yandex\\YandexBrowser\\User Data"
+      }
+    },
+    {
+      "name": "Naver Whale",
+      "paths": {
+        "macos": "Naver/Whale",
+        "linux": "naver-whale",
+        "windows": "Naver\\Whale\\User Data"
+      }
+    },
+    {
+      "name": "Coc Coc",
+      "paths": {
+        "macos": "CocCoc/Browser",
+        "linux": "coccoc",
+        "windows": "CocCoc\\Browser\\User Data"
+      }
+    },
+    {
+      "name": "Comodo Dragon",
+      "paths": {
+        "macos": "Comodo/Dragon",
+        "linux": "comodo-dragon",
+        "windows": "Comodo\\Dragon\\User Data"
+      }
+    },
+    {
+      "name": "Avast Secure Browser",
+      "paths": {
+        "macos": "AVAST Software/Browser",
+        "linux": "avast-secure-browser",
+        "windows": "AVAST Software\\Browser\\User Data"
+      }
+    },
+    {
+      "name": "AVG Secure Browser",
+      "paths": {
+        "macos": "AVG/Browser",
+        "linux": "avg-secure-browser",
+        "windows": "AVG\\Browser\\User Data"
+      }
+    },
+    {
+      "name": "Epic Privacy Browser",
+      "paths": {
+        "macos": "Epic Privacy Browser",
+        "linux": "epic",
+        "windows": "Epic Privacy Browser\\User Data"
+      }
+    },
+    {
+      "name": "Torch",
+      "paths": {
+        "macos": "Torch",
+        "linux": "torch",
+        "windows": "Torch\\User Data"
+      }
+    },
+    {
+      "name": "Slimjet",
+      "paths": {
+        "macos": "Slimjet",
+        "linux": "slimjet",
+        "windows": "Slimjet\\User Data"
+      }
+    },
+    {
+      "name": "SRWare Iron",
+      "paths": {
+        "macos": "Chromium",
+        "linux": "iron",
+        "windows": "Chromium\\User Data"
+      }
+    },
+    {
+      "name": "Ungoogled Chromium",
+      "paths": {
+        "macos": "Chromium",
+        "linux": "ungoogled-chromium",
+        "windows": "Chromium\\User Data"
+      }
+    },
+    {
+      "name": "Cent Browser",
+      "paths": {
+        "macos": "CentBrowser",
+        "linux": "cent-browser",
+        "windows": "CentBrowser\\User Data"
+      }
+    },
+    {
+      "name": "Maxthon",
+      "paths": {
+        "macos": "Maxthon",
+        "linux": "maxthon",
+        "windows": "Maxthon\\User Data"
+      }
+    },
+    {
+      "name": "Iridium",
+      "paths": {
+        "macos": "Iridium",
+        "linux": "iridium-browser",
+        "windows": "Iridium\\User Data"
+      }
+    },
+    {
+      "name": "Falkon",
+      "paths": {
+        "macos": "falkon",
+        "linux": "falkon",
+        "windows": null
+      }
+    },
+    {
+      "name": "Colibri",
+      "paths": {
+        "macos": "Nickolabs/Colibri",
+        "linux": "colibri",
+        "windows": null
+      }
+    }
+  ]
+}

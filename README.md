@@ -26,6 +26,15 @@ cd claude-chromium-native-messaging
 .\setup.ps1
 ```
 
+## Features
+
+- **27+ Supported Browsers** - Brave, Arc, Vivaldi, Edge, Opera, and more
+- **Cross-Platform** - Works on macOS, Linux, and Windows
+- **Safe by Default** - Dry-run mode, backup support, and path validation
+- **Interactive Setup** - Select which browsers to configure
+- **JSON Configuration** - Easy to extend with new browsers
+- **Test Suite** - Automated tests for reliability
+
 ## The Problem
 
 Claude's official browser extension only supports Google Chrome. But many developers prefer browsers like **Brave**, **Arc**, **Vivaldi**, or **Microsoft Edge**.
@@ -45,15 +54,15 @@ This tool automatically configures Native Messaging Host for your Chromium brows
 - Side panel functionality
 - All Claude in Chrome features
 
-
 ## Supported Browsers
 
 | Browser | macOS | Linux | Windows |
 |---------|:-----:|:-----:|:-------:|
 | **Brave** | ✅ | ✅ | ✅ |
-| **Arc** | ✅ | — | — |
+| **Arc** | ✅ | — | ✅ |
 | **Vivaldi** | ✅ | ✅ | ✅ |
 | **Microsoft Edge** | ✅ | ✅ | ✅ |
+| **Google Chrome** | ✅ | ✅ | ✅ |
 | **Opera / Opera GX** | ✅ | ✅ | ✅ |
 | **Chromium** | ✅ | ✅ | ✅ |
 | **Ungoogled Chromium** | ✅ | ✅ | ✅ |
@@ -72,6 +81,7 @@ This tool automatically configures Native Messaging Host for your Chromium brows
 | **Iridium** | ✅ | ✅ | ✅ |
 | **Sidekick** | ✅ | ✅ | ✅ |
 | **Genspark** | ✅ | ✅ | ✅ |
+| **Orion** | ✅ | ✅ | — |
 | **Falkon** | ✅ | ✅ | — |
 | **Colibri** | ✅ | ✅ | — |
 
@@ -83,6 +93,7 @@ Before running the setup:
 
 1. **Claude Desktop** installed ([Download here](https://claude.ai/download))
 2. **Claude in Chrome extension** installed in your browser ([Chrome Web Store](https://chrome.google.com/webstore/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn))
+3. **Bash 4.0+** (macOS users may need to install via Homebrew: `brew install bash`)
 
 ## Installation
 
@@ -114,10 +125,38 @@ The script will:
 3. Let you select which browser(s) to configure
 4. Create the necessary manifest files
 
+### Command Line Options
+
+| Option | Bash | PowerShell | Description |
+|--------|------|------------|-------------|
+| Uninstall | `--uninstall`, `-u` | `-Uninstall` | Remove configuration |
+| Custom Path | `--path PATH`, `-p` | `-Path PATH` | Specify browser path |
+| Dry Run | `--dry-run`, `-n` | `-DryRun` | Preview without changes |
+| Verbose | `--verbose`, `-v` | `-Verbose` | Detailed output |
+| Quiet | `--quiet`, `-q` | `-Quiet` | Minimal output |
+| Backup | `--backup`, `-b` | `-Backup` | Backup before overwrite |
+| Version | `--version`, `-V` | `-Version` | Show version |
+| Help | `--help`, `-h` | `-Help` | Show help |
+
+### Examples
+
+```bash
+# Preview what would be changed (dry-run)
+./setup.sh --dry-run
+
+# Install with automatic backups
+./setup.sh --backup
+
+# Install for a specific browser path
+./setup.sh --path ~/Library/Application\ Support/MyBrowser
+
+# Uninstall with verbose output
+./setup.sh --uninstall --verbose
+```
+
 ### Manual Setup
 
 See the detailed [Manual Setup Guide](docs/manual-setup.md) if you prefer to configure things yourself.
-
 
 ## Verification
 
@@ -149,6 +188,26 @@ The script creates these manifests in your browser's data directory:
 %LOCALAPPDATA%\YOUR_BROWSER\User Data\NativeMessagingHosts\
 ```
 
+## Project Structure
+
+```
+claude-chromium-native-messaging/
+├── setup.sh              # macOS/Linux setup script
+├── setup.ps1             # Windows setup script
+├── config/
+│   └── browsers.json     # Browser configuration (shared)
+├── tests/
+│   ├── test_setup.sh     # Bash test suite
+│   └── test_setup.ps1    # PowerShell test suite
+├── docs/
+│   └── manual-setup.md   # Manual setup guide
+├── CHANGELOG.md          # Version history
+├── CONTRIBUTING.md       # Contribution guidelines
+├── VERSION               # Current version
+├── LICENSE               # MIT License
+└── README.md             # This file
+```
+
 ## Troubleshooting
 
 **Extension not connecting after restart**
@@ -164,6 +223,14 @@ This is a known limitation. Claude Code looks for Google Chrome processes specif
 2. Then run `/chrome` in Claude Code
 
 See [Issue #14370](https://github.com/anthropics/claude-code/issues/14370) for updates.
+
+**Bash version error on macOS**
+
+macOS ships with Bash 3.2. Install a newer version:
+```bash
+brew install bash
+/opt/homebrew/bin/bash ./setup.sh
+```
 
 **Permission errors (macOS/Linux)**
 
@@ -186,7 +253,6 @@ Windows:
 .\setup.ps1 -Path "C:\path\to\browser\User Data"
 ```
 
-
 ## Uninstall
 
 **macOS / Linux:**
@@ -199,14 +265,26 @@ Windows:
 .\setup.ps1 -Uninstall
 ```
 
+## Running Tests
+
+```bash
+# Bash tests
+./tests/test_setup.sh
+
+# PowerShell tests
+.\tests\test_setup.ps1
+```
+
 ## Contributing
 
-Contributions are welcome! Areas where help is needed:
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
 
-- [ ] Additional browser detection
-- [ ] Automated testing
+Areas where help is needed:
+
 - [ ] Homebrew formula
 - [ ] Chocolatey package
+- [ ] AUR package for Arch Linux
+- [ ] Additional browser support
 
 ## Related Resources
 
@@ -231,7 +309,7 @@ This is an **unofficial workaround**. The official Claude in Chrome extension is
 ---
 
 <p align="center">
-  <a href="https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues">Report Bug</a> · 
+  <a href="https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues">Report Bug</a> ·
   <a href="https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues">Request Feature</a>
 </p>
 
