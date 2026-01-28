@@ -237,3 +237,88 @@ To remove the configuration:
 rm "/path/to/your/browser/NativeMessagingHosts/com.anthropic.claude_browser_extension.json"
 rm "/path/to/your/browser/NativeMessagingHosts/com.anthropic.claude_code_browser_extension.json"
 ```
+
+
+## Windows Setup
+
+### Step 1: Locate Your Browser's User Data Directory
+
+Browser data is typically in `%LOCALAPPDATA%`:
+
+| Browser | Path |
+|---------|------|
+| Brave | `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data` |
+| Vivaldi | `%LOCALAPPDATA%\Vivaldi\User Data` |
+| Microsoft Edge | `%LOCALAPPDATA%\Microsoft\Edge\User Data` |
+| Chromium | `%LOCALAPPDATA%\Chromium\User Data` |
+| Opera | `%LOCALAPPDATA%\Opera Software\Opera Stable` |
+| Opera GX | `%LOCALAPPDATA%\Opera Software\Opera GX Stable` |
+
+Open PowerShell and run:
+```powershell
+ls $env:LOCALAPPDATA
+```
+
+### Step 2: Create the NativeMessagingHosts Directory
+
+```powershell
+New-Item -ItemType Directory -Path "$env:LOCALAPPDATA\YOUR_BROWSER\User Data\NativeMessagingHosts" -Force
+```
+
+### Step 3: Verify Claude Installation Paths
+
+**Claude Desktop Native Host:**
+```powershell
+Test-Path "$env:LOCALAPPDATA\Programs\claude\resources\chrome-native-host.exe"
+```
+
+**Claude Code Native Host (optional):**
+```powershell
+Test-Path "$env:USERPROFILE\.claude\chrome\chrome-native-host.exe"
+```
+
+### Step 4: Create the Manifest Files
+
+**Claude Desktop Manifest:**
+
+```powershell
+$manifest = @"
+{
+  "name": "com.anthropic.claude_browser_extension",
+  "description": "Claude Browser Extension Native Host",
+  "path": "$($env:LOCALAPPDATA -replace '\\', '\\\\')\\\\Programs\\\\claude\\\\resources\\\\chrome-native-host.exe",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://dihbgbndebgnbjfmelmegjepbnkhlgni/",
+    "chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/",
+    "chrome-extension://dngcpimnedloihjnnfngkgjoidhnaolf/"
+  ]
+}
+"@
+
+Set-Content -Path "$env:LOCALAPPDATA\YOUR_BROWSER\User Data\NativeMessagingHosts\com.anthropic.claude_browser_extension.json" -Value $manifest
+```
+
+**Claude Code Manifest (optional):**
+
+```powershell
+$manifest = @"
+{
+  "name": "com.anthropic.claude_code_browser_extension",
+  "description": "Claude Code Browser Extension Native Host",
+  "path": "$($env:USERPROFILE -replace '\\', '\\\\')\\\\.claude\\\\chrome\\\\chrome-native-host.exe",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/"
+  ]
+}
+"@
+
+Set-Content -Path "$env:LOCALAPPDATA\YOUR_BROWSER\User Data\NativeMessagingHosts\com.anthropic.claude_code_browser_extension.json" -Value $manifest
+```
+
+### Step 5: Restart Your Browser
+
+1. Close all browser windows
+2. Open Task Manager (Ctrl+Shift+Esc) and end any remaining browser processes
+3. Start your browser fresh
