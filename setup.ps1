@@ -192,6 +192,7 @@ $script:BUILTIN_BROWSER_CONFIGS = @(
     @{ Name = "Slimjet"; Path = "Slimjet\User Data" },
     @{ Name = "SRWare Iron"; Path = "Chromium\User Data" },
     @{ Name = "Ungoogled Chromium"; Path = "Chromium\User Data" },
+    @{ Name = "Helium"; Path = "imput\Helium\User Data" },
     @{ Name = "Cent Browser"; Path = "CentBrowser\User Data" },
     @{ Name = "Maxthon"; Path = "Maxthon\User Data" },
     @{ Name = "Iridium"; Path = "Iridium\User Data" }

@@ -219,6 +219,15 @@
       }
     },
     {
+      "name": "Helium",
+      "_comment": "Helium by imputnet (helium.computer), based on ungoogled-chromium. Uses reverse-domain user data paths (net.imput.helium) on all platforms.",
+      "paths": {
+        "macos": "net.imput.helium",
+        "linux": "net.imput.helium",
+        "windows": "imput\\Helium\\User Data"
+      }
+    },
+    {
       "name": "Cent Browser",
       "paths": {
         "macos": "CentBrowser",

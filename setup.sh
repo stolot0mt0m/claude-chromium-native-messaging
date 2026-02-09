@@ -243,6 +243,7 @@ declare -a BUILTIN_BROWSER_CONFIGS=(
     "Slimjet|Slimjet|slimjet"
     "SRWare Iron|Chromium|iron"
     "Ungoogled Chromium|Chromium|ungoogled-chromium"
+    "Helium|net.imput.helium|net.imput.helium"
     "Cent Browser|CentBrowser|cent-browser"
     "Maxthon|Maxthon|maxthon"
     "Iridium|Iridium|iridium-browser"
