@@ -46,3 +46,26 @@ No concerns. Adding browser entries is O(1) static config lookup. Detection loop
 - `realpath -m` handles symlinks safely
 - `validate_browser_installation()` uses only `-d`, `-f`, and nullglob — no command execution, no string interpolation risk
 - The script runs as the current user; filesystem permissions are the primary access control
+
+---
+
+# Review: Documentation Update (v1.2.0)
+
+## Architecture Decisions
+
+### FAQ Placement
+FAQ section placed between Troubleshooting and Uninstall in README, mirroring the user journey: hit a problem (Troubleshooting), need deeper understanding (FAQ), want to remove (Uninstall).
+
+### Custom Path Documentation Approach
+Rather than listing every possible browser location, the README teaches users to find their own browser's data directory via `chrome://version`. This scales to any Chromium browser without maintaining an exhaustive path list.
+
+### browsers.json `_documentation` Field
+Added a top-level `_documentation` object explaining path conventions and custom path usage. Follows the existing `_comment` pattern on individual entries and uses underscore-prefixed keys (conventional JSON metadata) to avoid breaking parsers.
+
+## Known Limitations
+- FAQ notes Chrome Canary and Chrome Dev share `google-chrome-unstable` on Linux — platform constraint, documented explicitly.
+- `docs/manual-setup.md` may need a corresponding update for custom paths (not in scope for this change).
+- `_documentation` in browsers.json is informal metadata with no JSON Schema enforcement.
+
+## Security Review
+- No security-relevant changes. Documentation accurately describes existing filesystem validation without exposing exploitable implementation details

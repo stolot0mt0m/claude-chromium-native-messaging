@@ -2,6 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.0.0",
   "description": "Browser configuration for Claude Native Messaging setup scripts",
+  "_documentation": {
+    "paths": "Each browser entry has a 'paths' object with 'macos', 'linux', and 'windows' keys. Values are relative to the platform's base data directory: ~/Library/Application Support/ (macOS), ~/.config/ (Linux), %LOCALAPPDATA%/ (Windows). Set to null if the browser is not available on that platform.",
+    "custom_paths": "Users can bypass this config entirely by passing --path (Bash) or -Path (PowerShell) with an absolute path to their browser's data directory. The script validates that the path exists, is readable, and contains Chromium profile markers.",
+    "_comment_field": "Use '_comment' on individual browser entries to document platform-specific quirks (e.g., shared data directories, non-obvious naming conventions)."
+  },
   "extension_ids": {
     "official": {
       "id": "fcoeoabgfenejglbffodgkkbkcdhcgfn",
