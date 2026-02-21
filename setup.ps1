@@ -177,6 +177,9 @@ $script:BUILTIN_BROWSER_CONFIGS = @(
     @{ Name = "Microsoft Edge"; Path = "Microsoft\Edge\User Data" },
     @{ Name = "Chromium"; Path = "Chromium\User Data" },
     @{ Name = "Google Chrome"; Path = "Google\Chrome\User Data" },
+    @{ Name = "Google Chrome Canary"; Path = "Google\Chrome SxS\User Data" },
+    @{ Name = "Google Chrome Beta"; Path = "Google\Chrome Beta\User Data" },
+    @{ Name = "Google Chrome Dev"; Path = "Google\Chrome Dev\User Data" },
     @{ Name = "Opera"; Path = "Opera Software\Opera Stable" },
     @{ Name = "Opera GX"; Path = "Opera Software\Opera GX Stable" },
     @{ Name = "Genspark"; Path = "GensparkSoftware\Genspark-Browser\User Data" },
@@ -538,8 +541,8 @@ EXAMPLES:
 
 SUPPORTED BROWSERS:
     Brave, Arc, Vivaldi, Microsoft Edge, Chromium, Google Chrome,
-    Opera, Opera GX, Genspark, Sidekick, Yandex, Naver Whale,
-    and many more Chromium-based browsers.
+    Google Chrome Canary, Opera, Opera GX, Genspark, Sidekick,
+    Yandex, Naver Whale, and many more Chromium-based browsers.
 
 For more information, see: https://github.com/stolot0mt0m/claude-chromium-native-messaging
 "@

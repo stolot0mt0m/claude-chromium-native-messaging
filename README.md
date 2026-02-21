@@ -28,7 +28,7 @@ cd claude-chromium-native-messaging
 
 ## Features
 
-- **28+ Supported Browsers** - Brave, Arc, Vivaldi, Edge, Opera, and more
+- **31+ Supported Browsers** - Brave, Arc, Vivaldi, Edge, Opera, and more
 - **Cross-Platform** - Works on macOS, Linux, and Windows
 - **Safe by Default** - Dry-run mode, backup support, and path validation
 - **Interactive Setup** - Select which browsers to configure
@@ -63,6 +63,9 @@ This tool automatically configures Native Messaging Host for your Chromium brows
 | **Vivaldi** | ✅ | ✅ | ✅ |
 | **Microsoft Edge** | ✅ | ✅ | ✅ |
 | **Google Chrome** | ✅ | ✅ | ✅ |
+| **Google Chrome Canary** | ✅ | ✅ | ✅ |
+| **Google Chrome Beta** | ✅ | ✅ | ✅ |
+| **Google Chrome Dev** | ✅ | ✅ | ✅ |
 | **Opera / Opera GX** | ✅ | ✅ | ✅ |
 | **Chromium** | ✅ | ✅ | ✅ |
 | **Ungoogled Chromium** | ✅ | ✅ | ✅ |

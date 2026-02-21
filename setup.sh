@@ -45,6 +45,7 @@ UNINSTALL_MODE=false
 CUSTOM_PATH=""
 DRY_RUN=false
 VERBOSE=false
+DEBUG=false
 QUIET=false
 BACKUP=false
 OS=""
@@ -96,6 +97,12 @@ print_verbose() {
     fi
 }
 
+print_debug() {
+    if [[ "$DEBUG" == true ]]; then
+        echo -e "${BLUE}  [DEBUG] $1${NC}"
+    fi
+}
+
 print_dry_run() {
     echo -e "${YELLOW}[DRY-RUN] $1${NC}"
 }
@@ -130,26 +137,36 @@ check_dependencies() {
 
 validate_path() {
     local path="$1"
-    local resolved_path
 
-    # Try to resolve the path
-    if ! resolved_path="$(realpath -m "$path" 2>/dev/null)"; then
-        print_error "Invalid path: $path"
+    # Path must be absolute (no relative paths)
+    if [[ "$path" != /* ]]; then
+        print_error "Custom browser path must be absolute: $path"
         return 1
     fi
 
-    # Security check: path must be within user directories
-    local home_dir="$HOME"
-    if [[ "$OS" == "macos" ]]; then
-        if [[ ! "$resolved_path" =~ ^(/Users/|$home_dir) ]]; then
-            print_error "Path must be within user directories: $resolved_path"
-            return 1
-        fi
-    elif [[ "$OS" == "linux" ]]; then
-        if [[ ! "$resolved_path" =~ ^(/home/|$home_dir|/tmp/) ]]; then
-            print_error "Path must be within user directories: $resolved_path"
-            return 1
-        fi
+    # Resolve the path (follow symlinks, normalize ./ and ../)
+    local resolved_path
+    if ! resolved_path="$(realpath -m "$path" 2>/dev/null)"; then
+        print_error "Custom browser path does not exist: $path"
+        return 1
+    fi
+
+    # Security: reject path traversal attempts (resolved path should not escape via ..)
+    if [[ "$resolved_path" != "$path" ]] && [[ "$path" == *..* ]]; then
+        print_error "Path traversal not allowed: $path"
+        return 1
+    fi
+
+    # Check that the path actually exists as a directory
+    if [[ ! -d "$resolved_path" ]]; then
+        print_error "Custom browser path does not exist: $resolved_path"
+        return 1
+    fi
+
+    # Check the directory is readable
+    if [[ ! -r "$resolved_path" ]]; then
+        print_error "Custom browser path is not readable: $resolved_path"
+        return 1
     fi
 
     echo "$resolved_path"
@@ -227,6 +244,9 @@ declare -a BUILTIN_BROWSER_CONFIGS=(
     "Microsoft Edge|Microsoft Edge|microsoft-edge"
     "Chromium|Chromium|chromium"
     "Google Chrome|Google/Chrome|google-chrome"
+    "Google Chrome Canary|Google/Chrome Canary|google-chrome-unstable"
+    "Google Chrome Beta|Google/Chrome Beta|google-chrome-beta"
+    "Google Chrome Dev|Google/Chrome Dev|google-chrome-unstable"
     "Genspark|GensparkSoftware/Genspark-Browser|GensparkSoftware/Genspark-Browser"
     "Opera|com.operasoftware.Opera|opera"
     "Opera GX|com.operasoftware.OperaGX|opera-gx"
@@ -278,10 +298,52 @@ load_browser_configs_from_json() {
     ' "$CONFIG_FILE" 2>/dev/null
 }
 
+validate_browser_installation() {
+    local browser_path="$1"
+    local name="$2"
+
+    # Directory must exist
+    if [[ ! -d "$browser_path" ]]; then
+        print_debug "Skipped $name: directory does not exist ($browser_path)"
+        return 1
+    fi
+
+    # Directory must not be empty (catches leftover/stale directories)
+    shopt -s nullglob
+    local contents=("$browser_path"/*)
+    shopt -u nullglob
+
+    if [[ ${#contents[@]} -eq 0 ]]; then
+        print_debug "Skipped $name: directory is empty ($browser_path)"
+        return 1
+    fi
+
+    # Check for Chromium profile markers: Default/, Preferences, Local State
+    # A real Chromium data dir has at least one of these
+    if [[ -d "$browser_path/Default" ]] || \
+       [[ -f "$browser_path/Preferences" ]] || \
+       [[ -f "$browser_path/Local State" ]]; then
+        return 0
+    fi
+
+    # Check for numbered profiles (Profile 1, Profile 2, etc.)
+    shopt -s nullglob
+    local profiles=("$browser_path"/Profile\ *)
+    shopt -u nullglob
+
+    if [[ ${#profiles[@]} -gt 0 ]]; then
+        return 0
+    fi
+
+    print_debug "Skipped $name: no browser profile data found ($browser_path)"
+    return 1
+}
+
 detect_browsers() {
     local base_path
     base_path=$(get_app_support_base)
     local detected=()
+    local skipped_count=0
 
     # Try to load from JSON config first
     local use_json=false
@@ -299,18 +361,18 @@ detect_browsers() {
     fi
 
     if [[ "$use_json" == true ]]; then
-        # Use JSON configs
         for config in "${json_configs[@]}"; do
             IFS='|' read -r name browser_path <<< "$config"
             local full_path="$base_path/$browser_path"
 
-            if [[ -d "$full_path" ]]; then
+            if validate_browser_installation "$full_path" "$name"; then
                 detected+=("$name|$full_path")
                 print_verbose "Found: $name at $full_path"
+            else
+                ((skipped_count++)) || true
             fi
         done
     else
-        # Fall back to built-in configs
         print_verbose "Using built-in browser configurations"
         for config in "${BUILTIN_BROWSER_CONFIGS[@]}"; do
             IFS='|' read -r name macos_path linux_path <<< "$config"
@@ -322,18 +384,25 @@ detect_browsers() {
                 browser_path="$linux_path"
             fi
 
-            # Skip if no path for this OS
             [[ -z "$browser_path" ]] && continue
 
             local full_path="$base_path/$browser_path"
-            if [[ -d "$full_path" ]]; then
+            if validate_browser_installation "$full_path" "$name"; then
                 detected+=("$name|$full_path")
                 print_verbose "Found: $name at $full_path"
+            else
+                ((skipped_count++)) || true
             fi
         done
     fi
 
-    printf '%s\n' "${detected[@]}"
+    if [[ "$skipped_count" -gt 0 ]]; then
+        print_verbose "Skipped $skipped_count browser(s) without valid installation"
+    fi
+
+    if [[ ${#detected[@]} -gt 0 ]]; then
+        printf '%s\n' "${detected[@]}"
+    fi
 }
 
 # =============================================================================
@@ -597,9 +666,13 @@ USAGE:
 
 OPTIONS:
     -u, --uninstall     Remove Claude native messaging configuration
-    -p, --path PATH     Specify custom browser Application Support path
+    -p, --path PATH     Specify custom browser data directory (absolute path).
+                        Use this for browsers not auto-detected or installed
+                        in non-standard locations. The path must exist and
+                        be readable.
     -n, --dry-run       Show what would be done without making changes
     -v, --verbose       Enable verbose output
+    -d, --debug         Show all checked browser paths (including skipped)
     -q, --quiet         Suppress non-error output
     -b, --backup        Create backups before overwriting existing files
     -V, --version       Show version information
@@ -618,13 +691,16 @@ EXAMPLES:
     # Setup for a custom browser path
     $SCRIPT_NAME --path "/path/to/browser/data"
 
+    # Show all checked paths for troubleshooting
+    $SCRIPT_NAME --debug
+
     # Uninstall with verbose output
     $SCRIPT_NAME --uninstall --verbose
 
 SUPPORTED BROWSERS:
     Brave, Arc, Vivaldi, Microsoft Edge, Chromium, Google Chrome,
-    Opera, Opera GX, Genspark, Sidekick, Yandex, Naver Whale,
-    and many more Chromium-based browsers.
+    Google Chrome Canary, Opera, Opera GX, Genspark, Sidekick,
+    Yandex, Naver Whale, and many more Chromium-based browsers.
 
 For more information, see: https://github.com/stolot0mt0m/claude-chromium-native-messaging
 EOF
@@ -659,6 +735,11 @@ main() {
                 shift
                 ;;
             --verbose|-v)
+                VERBOSE=true
+                shift
+                ;;
+            --debug|-d)
+                DEBUG=true
                 VERBOSE=true
                 shift
                 ;;
@@ -794,7 +875,7 @@ main() {
         echo -e "  $i) $name $extension_status"
         echo -e "     ${BLUE}$path${NC}"
         echo ""
-        ((i++))
+        ((i++)) || true
     done
 
     # Prompt user for selection

@@ -91,6 +91,31 @@
       }
     },
     {
+      "name": "Google Chrome Canary",
+      "_comment": "Chrome Canary (Dev/Unstable channel). On Windows uses 'Chrome SxS' naming. On Linux, the dev channel package 'google-chrome-unstable' uses 'google-chrome-unstable' as the data directory.",
+      "paths": {
+        "macos": "Google/Chrome Canary",
+        "linux": "google-chrome-unstable",
+        "windows": "Google\\Chrome SxS\\User Data"
+      }
+    },
+    {
+      "name": "Google Chrome Beta",
+      "paths": {
+        "macos": "Google/Chrome Beta",
+        "linux": "google-chrome-beta",
+        "windows": "Google\\Chrome Beta\\User Data"
+      }
+    },
+    {
+      "name": "Google Chrome Dev",
+      "paths": {
+        "macos": "Google/Chrome Dev",
+        "linux": "google-chrome-unstable",
+        "windows": "Google\\Chrome Dev\\User Data"
+      }
+    },
+    {
       "name": "Genspark",
       "paths": {
         "macos": "GensparkSoftware/Genspark-Browser",
