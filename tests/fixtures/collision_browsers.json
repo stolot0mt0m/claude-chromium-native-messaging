@@ -1,0 +1,29 @@
+{
+  "_comment": "Test fixture: browsers that share the same macOS data path (Chromium)",
+  "browsers": [
+    {
+      "name": "Chromium",
+      "paths": {
+        "macos": "Chromium",
+        "linux": "chromium",
+        "windows": "Chromium\\User Data"
+      }
+    },
+    {
+      "name": "SRWare Iron",
+      "paths": {
+        "macos": "Chromium",
+        "linux": "iron",
+        "windows": "Chromium\\User Data"
+      }
+    },
+    {
+      "name": "Ungoogled Chromium",
+      "paths": {
+        "macos": "Chromium",
+        "linux": "ungoogled-chromium",
+        "windows": "Chromium\\User Data"
+      }
+    }
+  ]
+}

@@ -69,3 +69,46 @@ Added a top-level `_documentation` object explaining path conventions and custom
 
 ## Security Review
 - No security-relevant changes. Documentation accurately describes existing filesystem validation without exposing exploitable implementation details
+
+---
+
+# Review: Browser Detection Integration Tests
+
+## Architecture Decisions
+
+### Test Framework Choice
+- **Decision**: Extended the existing bash test framework from `test_setup.sh` rather than introducing a third-party test runner (bats, shunit2, etc.).
+- **Why**: Zero additional dependencies, consistent with existing patterns, and the custom framework is already well-established in the project. Adding a dependency for testing a dependency-free script would be ironic.
+
+### Function Extraction via `sed`
+- **Decision**: Extract individual functions from `setup.sh` using `sed -n '/^func_name()/,/^}/p'` and `eval` them into the test shell.
+- **Trade-off**: Brittle if function format changes, but avoids running the entire script (which requires interactive input and real Claude Desktop). Same pattern already used in `test_setup.sh`.
+- **Pitfall found**: `declare -a` inside a function creates a **local** variable in Bash. Moved `BUILTIN_BROWSER_CONFIGS` array sourcing to global scope.
+
+### Filesystem Mocking Strategy
+- **Decision**: Create real temporary directories with `mktemp -d` and override `$HOME`. No complex mocking framework.
+- **Why**: Tests exercise actual filesystem-checking code paths (`-d`, `-f`, nullglob). Mocking at the filesystem level gives confidence that the validation logic works with real `stat` calls.
+- **`create_mock_browser()` helper**: Centralizes mock setup with a `marker` parameter (default, localstate, preferences, profile, empty, nomarker). Reduces boilerplate from ~5 lines per mock to 1.
+
+### Test Isolation
+- **Decision**: Each test calls `setup_test_env()` / `teardown_test_env()` with `CONFIG_FILE` restoration.
+- **Why**: Tests that override `CONFIG_FILE` (e.g., to test fallback behavior) must not leak state to subsequent tests. The `ORIG_CONFIG_FILE` / restore pattern prevents this.
+
+### Fixture Files
+- **Decision**: Created 6 fixture JSON config files in `tests/fixtures/` for targeted config-handling tests.
+- **Why**: Testing with the full 31-browser `browsers.json` makes assertions fragile (tied to exact browser count). Fixtures provide controlled, minimal test data.
+
+## Known Limitations
+- **Windows tests not covered**: PowerShell `test_setup.ps1` exists but does not test browser detection logic (Windows uses different code paths in `setup.ps1`). The bash integration tests simulate macOS via `OS="macos"` but cannot test actual macOS filesystem behavior on Linux.
+- **No `create_manifests()` integration test**: Manifest creation is tested indirectly via the dry-run test in `test_setup.sh`. A full integration test would require writing and verifying JSON manifest content.
+- **`get_claude_native_host_path()` always returns empty**: In the test environment, Claude Desktop is not installed, so this function returns empty. Tests document but do not exercise the "found" path.
+
+## Scalability Notes
+- 128 total tests (52 + 76) complete in ~3 seconds on a VPS. Each test creates/destroys a temp dir — no accumulation.
+- Adding new browser entries requires no test changes unless they introduce new edge cases.
+
+## Security Review
+- Tests use `mktemp -d` for isolation — no writes to real `$HOME` or system directories
+- `teardown_test_env()` unconditionally cleans up temp dirs
+- No secrets, credentials, or network access in tests
+- Path traversal test verifies `validate_path()` rejects `..` sequences

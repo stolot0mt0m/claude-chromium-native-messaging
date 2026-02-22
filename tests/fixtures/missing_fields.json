@@ -1,0 +1,19 @@
+{
+  "_comment": "Test fixture: browser entries missing required fields",
+  "browsers": [
+    {
+      "name": "ValidBrowser",
+      "paths": {
+        "linux": "valid-browser"
+      }
+    },
+    {
+      "paths": {
+        "linux": "no-name-browser"
+      }
+    },
+    {
+      "name": "NoPaths"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "browsers": [
+    {
+      "name": "Google Chrome Canary",
+      "_comment": "Test fixture: Chrome Canary only",
+      "paths": {
+        "macos": "Google/Chrome Canary",
+        "linux": "google-chrome-unstable",
+        "windows": "Google\\Chrome SxS\\User Data"
+      }
+    }
+  ]
+}

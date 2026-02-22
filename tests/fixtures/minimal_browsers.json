@@ -1,0 +1,12 @@
+{
+  "browsers": [
+    {
+      "name": "TestBrowser",
+      "paths": {
+        "macos": "TestBrowser",
+        "linux": "test-browser",
+        "windows": "TestBrowser\\User Data"
+      }
+    }
+  ]
+}
