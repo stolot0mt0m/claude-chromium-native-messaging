@@ -229,9 +229,45 @@ function Get-BrowserConfigsFromJson {
     }
 }
 
+function Test-BrowserInstallation {
+    param([string]$BrowserPath, [string]$Name)
+
+    if (-not (Test-Path $BrowserPath)) {
+        Write-VerboseMessage "Skipped ${Name}: directory does not exist ($BrowserPath)"
+        return $false
+    }
+
+    $contents = Get-ChildItem -Path $BrowserPath -ErrorAction SilentlyContinue
+    if (-not $contents -or $contents.Count -eq 0) {
+        Write-VerboseMessage "Skipped ${Name}: directory is empty ($BrowserPath)"
+        return $false
+    }
+
+    # Check for Chromium profile markers
+    $defaultDir = Join-Path $BrowserPath "Default"
+    $prefsFile = Join-Path $BrowserPath "Preferences"
+    $localState = Join-Path $BrowserPath "Local State"
+
+    if ((Test-Path $defaultDir) -or (Test-Path $prefsFile) -or (Test-Path $localState)) {
+        return $true
+    }
+
+    # Check for numbered profiles (Profile 1, Profile 2, etc.)
+    $profiles = Get-ChildItem -Path $BrowserPath -Directory -Filter "Profile*" -ErrorAction SilentlyContinue
+    if ($profiles -and $profiles.Count -gt 0) {
+        return $true
+    }
+
+    Write-VerboseMessage "Skipped ${Name}: no browser profile data found ($BrowserPath)"
+    return $false
+}
+
 function Get-InstalledBrowsers {
     $basePath = $env:LOCALAPPDATA
     $detected = @()
+    # Track seen paths to deduplicate browsers sharing the same data directory
+    # (e.g., Chromium, SRWare Iron, Ungoogled Chromium all use Chromium\User Data on Windows)
+    $seenPaths = @()
 
     # Try to load from JSON config first
     $browserConfigs = Get-BrowserConfigsFromJson
@@ -242,7 +278,14 @@ function Get-InstalledBrowsers {
 
     foreach ($browser in $browserConfigs) {
         $browserPath = Join-Path $basePath $browser.Path
-        if (Test-Path $browserPath) {
+        if (Test-BrowserInstallation -BrowserPath $browserPath -Name $browser.Name) {
+            # Skip if another browser already claimed this path
+            if ($seenPaths -contains $browserPath) {
+                Write-VerboseMessage "Skipped $($browser.Name): path already claimed by another browser ($browserPath)"
+                continue
+            }
+
+            $seenPaths += $browserPath
             $detected += @{
                 Name = $browser.Name
                 Path = $browserPath

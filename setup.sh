@@ -344,6 +344,9 @@ detect_browsers() {
     base_path=$(get_app_support_base)
     local detected=()
     local skipped_count=0
+    # Track seen paths to deduplicate browsers sharing the same data directory
+    # (e.g., Chromium, SRWare Iron, Ungoogled Chromium all use ~/Library/Application Support/Chromium on macOS)
+    local seen_paths=()
 
     # Try to load from JSON config first
     local use_json=false
@@ -366,6 +369,20 @@ detect_browsers() {
             local full_path="$base_path/$browser_path"
 
             if validate_browser_installation "$full_path" "$name"; then
+                # Skip if another browser already claimed this path
+                local already_seen=false
+                for seen in "${seen_paths[@]}"; do
+                    if [[ "$seen" == "$full_path" ]]; then
+                        already_seen=true
+                        break
+                    fi
+                done
+                if [[ "$already_seen" == true ]]; then
+                    print_verbose "Skipped $name: path already claimed by another browser ($full_path)"
+                    continue
+                fi
+
+                seen_paths+=("$full_path")
                 detected+=("$name|$full_path")
                 print_verbose "Found: $name at $full_path"
             else
@@ -388,6 +405,20 @@ detect_browsers() {
 
             local full_path="$base_path/$browser_path"
             if validate_browser_installation "$full_path" "$name"; then
+                # Skip if another browser already claimed this path
+                local already_seen=false
+                for seen in "${seen_paths[@]}"; do
+                    if [[ "$seen" == "$full_path" ]]; then
+                        already_seen=true
+                        break
+                    fi
+                done
+                if [[ "$already_seen" == true ]]; then
+                    print_verbose "Skipped $name: path already claimed by another browser ($full_path)"
+                    continue
+                fi
+
+                seen_paths+=("$full_path")
                 detected+=("$name|$full_path")
                 print_verbose "Found: $name at $full_path"
             else
