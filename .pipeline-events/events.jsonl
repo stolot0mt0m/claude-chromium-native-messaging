@@ -1,0 +1,7 @@
+{"ts":"2026-02-22T01:39:56+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-browser-detection-logik-ana","claude-opus-4-6","25m"]}
+{"ts":"2026-02-22T01:43:56+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-chrome-canary-support-hinzu","claude-opus-4-6","25m"]}
+{"ts":"2026-02-22T01:43:57+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-custom-browser-path-validie","claude-opus-4-6","25m"]}
+{"ts":"2026-02-22T01:43:57+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-phantom-browser-paths-filte","claude-opus-4-6","25m"]}
+{"ts":"2026-02-22T01:52:26+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-integration-tests-fuer-alle","claude-opus-4-6","25m"]}
+{"ts":"2026-02-22T01:52:27+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-dokumentation-und-user-guid","claude-opus-4-6","25m"]}
+{"ts":"2026-02-22T02:02:42+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-end-to-end-test-mit-chrome-","claude-opus-4-6","25m"]}
