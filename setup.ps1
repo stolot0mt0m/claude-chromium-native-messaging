@@ -12,7 +12,6 @@ param(
     [switch]$Uninstall,
     [string]$Path,
     [switch]$DryRun,
-    [switch]$Verbose,
     [switch]$Quiet,
     [switch]$Backup,
     [switch]$Version,
@@ -89,7 +88,7 @@ function Write-InfoMessage {
 
 function Write-VerboseMessage {
     param([string]$Message)
-    if ($Verbose) {
+    if ($VerbosePreference -ne 'SilentlyContinue') {
         Write-Host "  -> " -ForegroundColor DarkGray -NoNewline
         Write-Host $Message -ForegroundColor DarkGray
     }
