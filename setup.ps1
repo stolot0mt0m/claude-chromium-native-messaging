@@ -157,6 +157,23 @@ function Get-ClaudeNativeHostPath {
             return $p
         }
     }
+
+    # Fallback: MSIX / Windows Store installation
+    # Package folders use the pattern Claude_<publisherHash>
+    $msixBase = "$env:LOCALAPPDATA\Packages"
+    if (Test-Path $msixBase) {
+        $claudePkg = Get-ChildItem -Path $msixBase -Directory -Filter "Claude_*" |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($claudePkg) {
+            $msixPath = Join-Path $claudePkg.FullName "LocalCache\Roaming\Claude\ChromeNativeHost\chrome-native-host.exe"
+            if (Test-Path $msixPath) {
+                Write-VerboseMessage "Found Claude Desktop (Windows Store) at: $msixPath"
+                return $msixPath
+            }
+        }
+    }
+
     return $null
 }
 
