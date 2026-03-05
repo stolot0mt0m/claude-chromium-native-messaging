@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - PowerShell `-Verbose` parameter conflict: removed explicit `[switch]$Verbose` declaration that clashed with the common parameter provided by `[CmdletBinding()]`; `Write-VerboseMessage` now checks `$VerbosePreference` instead
+- Claude Desktop installed via Windows Store (MSIX) is now detected automatically (#7)
 
 ## [1.2.0] - 2026-02-22
 
