@@ -145,6 +145,7 @@ function Test-ValidPath {
 
 function Get-ClaudeNativeHostPath {
     $possiblePaths = @(
+        "$env:APPDATA\Claude\ChromeNativeHost\chrome-native-host.exe",
         "$env:LOCALAPPDATA\Programs\claude\resources\chrome-native-host.exe",
         "$env:LOCALAPPDATA\Claude\chrome-native-host.exe",
         "$env:PROGRAMFILES\Claude\chrome-native-host.exe",
