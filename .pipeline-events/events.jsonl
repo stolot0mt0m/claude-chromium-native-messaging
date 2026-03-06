@@ -5,3 +5,7 @@
 {"ts":"2026-02-22T01:52:26+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-integration-tests-fuer-alle","claude-opus-4-6","25m"]}
 {"ts":"2026-02-22T01:52:27+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-dokumentation-und-user-guid","claude-opus-4-6","25m"]}
 {"ts":"2026-02-22T02:02:42+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-end-to-end-test-mit-chrome-","claude-opus-4-6","25m"]}
+{"ts":"2026-03-06T10:13:17+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-appdata-pfad-in-get-clauden","claude-haiku-4-5","25m"]}
+{"ts":"2026-03-06T10:13:55+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-readme-dokumentation-zur-pf","claude-haiku-4-5","25m"]}
+{"ts":"2026-03-06T10:17:22+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-pester-tests-fuer-pfaderken","claude-sonnet-4-6","25m"]}
+{"ts":"2026-03-06T10:21:37+02:00","event":"spawn","project":"claude-chromium-native-messaging","args":["claude-chromium-native-messaging-github-issue-9-fix-verifizi","claude-haiku-4-5","25m"]}

@@ -46,3 +46,4 @@ coverage/
 .env
 .env.local
 *.local
+.repomap.tags.cache.v1/

@@ -267,10 +267,21 @@ New-Item -ItemType Directory -Path "$env:LOCALAPPDATA\YOUR_BROWSER\User Data\Nat
 
 ### Step 3: Verify Claude Installation Paths
 
-**Claude Desktop Native Host:**
+Claude Desktop can be installed in two ways on Windows. Verify which installation type you have:
+
+**Option A: Traditional (EXE) Installation**
+
 ```powershell
 Test-Path "$env:LOCALAPPDATA\Programs\claude\resources\chrome-native-host.exe"
 ```
+
+**Option B: MSIX (Microsoft Store) Installation**
+
+```powershell
+Test-Path "$env:APPDATA\Claude\ChromeNativeHost\chrome-native-host.exe"
+```
+
+If the path exists in Option A, use that path in your manifest. If Option A doesn't exist but Option B does, use the MSIX path. Most users will have Option A (traditional EXE installation).
 
 **Claude Code Native Host (optional):**
 ```powershell
@@ -279,7 +290,9 @@ Test-Path "$env:USERPROFILE\.claude\chrome\chrome-native-host.exe"
 
 ### Step 4: Create the Manifest Files
 
-**Claude Desktop Manifest:**
+**Claude Desktop Manifest — Traditional (EXE) Installation:**
+
+If you verified the path in Step 3 Option A exists, use this:
 
 ```powershell
 $manifest = @"
@@ -287,6 +300,28 @@ $manifest = @"
   "name": "com.anthropic.claude_browser_extension",
   "description": "Claude Browser Extension Native Host",
   "path": "$($env:LOCALAPPDATA -replace '\\', '\\\\')\\\\Programs\\\\claude\\\\resources\\\\chrome-native-host.exe",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://dihbgbndebgnbjfmelmegjepbnkhlgni/",
+    "chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/",
+    "chrome-extension://dngcpimnedloihjnnfngkgjoidhnaolf/"
+  ]
+}
+"@
+
+Set-Content -Path "$env:LOCALAPPDATA\YOUR_BROWSER\User Data\NativeMessagingHosts\com.anthropic.claude_browser_extension.json" -Value $manifest
+```
+
+**Claude Desktop Manifest — MSIX (Microsoft Store) Installation:**
+
+If you verified the path in Step 3 Option B exists (and Option A doesn't), use this instead:
+
+```powershell
+$manifest = @"
+{
+  "name": "com.anthropic.claude_browser_extension",
+  "description": "Claude Browser Extension Native Host",
+  "path": "$($env:APPDATA -replace '\\', '\\\\')\\\\Claude\\\\ChromeNativeHost\\\\chrome-native-host.exe",
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://dihbgbndebgnbjfmelmegjepbnkhlgni/",
@@ -322,3 +357,28 @@ Set-Content -Path "$env:LOCALAPPDATA\YOUR_BROWSER\User Data\NativeMessagingHosts
 1. Close all browser windows
 2. Open Task Manager (Ctrl+Shift+Esc) and end any remaining browser processes
 3. Start your browser fresh
+
+### Troubleshooting Windows Installation Issues
+
+**"Native messaging host not found" error on Windows**
+
+If you get this error, verify you used the correct path for your Claude installation type:
+
+1. **Check your installation type:**
+   ```powershell
+   # If this returns True, you have a traditional (EXE) installation
+   Test-Path "$env:LOCALAPPDATA\Programs\claude\resources\chrome-native-host.exe"
+
+   # If the above is False but this returns True, you have MSIX installation
+   Test-Path "$env:APPDATA\Claude\ChromeNativeHost\chrome-native-host.exe"
+   ```
+
+2. **If you have MSIX installation:**
+   - The path in your manifest should be: `%APPDATA%\Claude\ChromeNativeHost\chrome-native-host.exe`
+   - Traditional (EXE) path will NOT work
+
+3. **If you have traditional (EXE) installation:**
+   - The path in your manifest should be: `%LOCALAPPDATA%\Programs\claude\resources\chrome-native-host.exe`
+   - MSIX path will NOT work
+
+4. **Update the manifest** with the correct path and restart your browser
