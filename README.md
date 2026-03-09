@@ -1,10 +1,13 @@
 # Claude Native Messaging for Chromium Browsers
 
+[![GitHub stars](https://img.shields.io/github/stars/stolot0mt0m/claude-chromium-native-messaging?style=flat&logo=github)](https://github.com/stolot0mt0m/claude-chromium-native-messaging/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/stolot0mt0m/claude-chromium-native-messaging?style=flat&logo=github)](https://github.com/stolot0mt0m/claude-chromium-native-messaging/network)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 [![macOS](https://img.shields.io/badge/macOS-supported-brightgreen.svg)](https://www.apple.com/macos/)
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg)](https://www.linux.org/)
 [![Windows](https://img.shields.io/badge/Windows-supported-brightgreen.svg)](https://www.microsoft.com/windows)
+[![Browsers](https://img.shields.io/badge/browsers-31%2B_supported-blue.svg)](#supported-browsers)
 
 > **Use Claude AI browser extension with Brave, Arc, Vivaldi, Edge, Opera, Genspark, Helium, and other Chromium-based browsers**
 
@@ -45,6 +48,22 @@ The extension actually works fine in these browsers — it's just the **Native M
 - Claude Code's `/chrome` command doesn't detect the extension
 - No browser automation capabilities
 
+```mermaid
+graph LR
+    EXT["Claude Extension"] -->|"Native Messaging"| CHROME["Chrome ✅"]
+    EXT -.-x BRAVE["Brave ❌"]
+    EXT -.-x ARC["Arc ❌"]
+    EXT -.-x EDGE["Edge ❌"]
+    EXT -.-x MORE["30+ more ❌"]
+
+    style CHROME fill:#d4edda,stroke:#28a745,color:#000
+    style BRAVE fill:#f8d7da,stroke:#dc3545,color:#000
+    style ARC fill:#f8d7da,stroke:#dc3545,color:#000
+    style EDGE fill:#f8d7da,stroke:#dc3545,color:#000
+    style MORE fill:#f8d7da,stroke:#dc3545,color:#000
+    style EXT fill:#e8daef,stroke:#8e44ad,color:#000
+```
+
 ## The Solution
 
 This tool automatically configures Native Messaging Host for your Chromium browser, enabling:
@@ -53,6 +72,22 @@ This tool automatically configures Native Messaging Host for your Chromium brows
 - Claude Code browser automation (`/chrome`)
 - Side panel functionality
 - All Claude in Chrome features
+
+```mermaid
+graph LR
+    EXT["Claude Extension"] -->|"Native Messaging"| CHROME["Chrome ✅"]
+    EXT -->|"Manifest created"| BRAVE["Brave ✅"]
+    EXT -->|"Manifest created"| ARC["Arc ✅"]
+    EXT -->|"Manifest created"| EDGE["Edge ✅"]
+    EXT -->|"Manifest created"| MORE["31+ browsers ✅"]
+
+    style CHROME fill:#d4edda,stroke:#28a745,color:#000
+    style BRAVE fill:#d4edda,stroke:#28a745,color:#000
+    style ARC fill:#d4edda,stroke:#28a745,color:#000
+    style EDGE fill:#d4edda,stroke:#28a745,color:#000
+    style MORE fill:#d4edda,stroke:#28a745,color:#000
+    style EXT fill:#e8daef,stroke:#8e44ad,color:#000
+```
 
 ## Supported Browsers
 
@@ -209,6 +244,31 @@ After running the setup:
 ## How It Works
 
 Chrome extensions communicate with native applications through the [Native Messaging API](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging). This requires JSON manifest files that tell the browser where to find Claude's native host binary.
+
+```mermaid
+graph TB
+    subgraph BROWSER ["Your Browser"]
+        EXT["Claude Extension"]
+    end
+
+    EXT <-->|"Native Messaging API"| MANIFEST
+
+    MANIFEST["NativeMessagingHosts/\ncom.anthropic.claude*.json"]
+
+    MANIFEST -->|"points to"| HOST["Claude Native Host Binary\n(installed by Claude Desktop)"]
+
+    HOST <--> CD["Claude Desktop"]
+    HOST <--> CC["Claude Code"]
+
+    SETUP["setup.sh / setup.ps1"] -.->|"creates"| MANIFEST
+
+    style BROWSER fill:#f0f4ff,stroke:#4a90d9,color:#000
+    style SETUP fill:#fff3cd,stroke:#ffc107,color:#000
+    style MANIFEST fill:#e8f5e9,stroke:#4caf50,color:#000
+    style HOST fill:#fce4ec,stroke:#e91e63,color:#000
+    style CD fill:#e8daef,stroke:#8e44ad,color:#000
+    style CC fill:#e8daef,stroke:#8e44ad,color:#000
+```
 
 The script creates these manifests in your browser's data directory:
 
