@@ -12,25 +12,25 @@ The browser detection follows a linear pipeline from script entry to manifest cr
 
 ```mermaid
 flowchart TB
-    START(["main()"]) --> PARSE["Parse CLI arguments\n--path, --uninstall, --dry-run, etc."]
-    PARSE --> BASH["check_bash_version()\nRequires Bash 4.0+"]
-    BASH --> OS["detect_os()\nReturns macos | linux | windows"]
-    OS --> HOST["get_claude_native_host_path()\nFind Claude Desktop binary"]
+    START(["main()"]) --> PARSE["Parse CLI arguments<br/>--path, --uninstall, --dry-run, etc."]
+    PARSE --> BASH["check_bash_version()<br/>Requires Bash 4.0+"]
+    BASH --> OS["detect_os()<br/>Returns macos | linux | windows"]
+    OS --> HOST["get_claude_native_host_path()<br/>Find Claude Desktop binary"]
     HOST --> HOST_CHECK{Found?}
     HOST_CHECK -->|No| EXIT_ERR["Exit: Claude Desktop not found"]
-    HOST_CHECK -->|Yes| CODE["get_claude_code_native_host_path()\nReturns hardcoded path (no validation)"]
+    HOST_CHECK -->|Yes| CODE["get_claude_code_native_host_path()<br/>Returns hardcoded path (no validation)"]
 
     CODE --> CUSTOM{--path provided?}
 
-    CUSTOM -->|Yes| VALIDATE["validate_path()\nAbsolute path, exists, readable"]
+    CUSTOM -->|Yes| VALIDATE["validate_path()<br/>Absolute path, exists, readable"]
     VALIDATE --> VALID{Valid?}
     VALID -->|No| EXIT_ERR2["Exit: Invalid path"]
     VALID -->|Yes| MANIFESTS["create_manifests()"]
 
-    CUSTOM -->|No| DETECT["detect_browsers()\nAuto-detect installed browsers"]
-    DETECT --> DISPLAY["Display found browsers\nwith extension status"]
-    DISPLAY --> SELECT["User selects browser(s)\nor 'all'"]
-    SELECT --> LOOP["create_manifests()\nfor each selected browser"]
+    CUSTOM -->|No| DETECT["detect_browsers()<br/>Auto-detect installed browsers"]
+    DETECT --> DISPLAY["Display found browsers<br/>with extension status"]
+    DISPLAY --> SELECT["User selects browser(s)<br/>or 'all'"]
+    SELECT --> LOOP["create_manifests()<br/>for each selected browser"]
 
     style EXIT_ERR fill:#f8d7da,stroke:#dc3545,color:#000
     style EXIT_ERR2 fill:#f8d7da,stroke:#dc3545,color:#000
@@ -100,14 +100,14 @@ This function validates that a detected directory is actually a Chromium browser
 ```mermaid
 flowchart TB
     START(["validate_browser_installation(path, name)"]) --> DIR{Directory exists?}
-    DIR -->|No| FAIL1["Return 1\n(Skip: directory does not exist)"]
+    DIR -->|No| FAIL1["Return 1<br/>(Skip: directory does not exist)"]
     DIR -->|Yes| EMPTY{Directory not empty?}
-    EMPTY -->|Empty| FAIL2["Return 1\n(Skip: directory is empty)"]
-    EMPTY -->|Has contents| MARKERS{"Chromium profile markers?\n• Default/ dir\n• Preferences file\n• Local State file"}
-    MARKERS -->|Yes| OK["Return 0\n(Valid browser installation)"]
-    MARKERS -->|No| PROFILES{"Numbered profiles?\n(Profile 1, Profile 2, ...)"}
+    EMPTY -->|Empty| FAIL2["Return 1<br/>(Skip: directory is empty)"]
+    EMPTY -->|Has contents| MARKERS{"Chromium profile markers?<br/>• Default/ dir<br/>• Preferences file<br/>• Local State file"}
+    MARKERS -->|Yes| OK["Return 0<br/>(Valid browser installation)"]
+    MARKERS -->|No| PROFILES{"Numbered profiles?<br/>(Profile 1, Profile 2, ...)"}
     PROFILES -->|Yes| OK
-    PROFILES -->|No| FAIL3["Return 1\n(Skip: no profile data found)"]
+    PROFILES -->|No| FAIL3["Return 1<br/>(Skip: no profile data found)"]
 
     style FAIL1 fill:#f8d7da,stroke:#dc3545,color:#000
     style FAIL2 fill:#f8d7da,stroke:#dc3545,color:#000
@@ -119,20 +119,20 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    START(["detect_browsers()"]) --> JQ{"jq available +\nconfig file exists?"}
-    JQ -->|Yes| JSON["load_browser_configs_from_json()\nParse browsers.json"]
-    JQ -->|No| BUILTIN["Use BUILTIN_BROWSER_CONFIGS\n(hardcoded fallback array)"]
+    START(["detect_browsers()"]) --> JQ{"jq available +<br/>config file exists?"}
+    JQ -->|Yes| JSON["load_browser_configs_from_json()<br/>Parse browsers.json"]
+    JQ -->|No| BUILTIN["Use BUILTIN_BROWSER_CONFIGS<br/>(hardcoded fallback array)"]
 
     JSON --> LOOP["For each browser config"]
     BUILTIN --> LOOP
 
-    LOOP --> PATH["Construct full path:\nbase_path + / + relative_path\n\nmacOS: ~/Library/Application Support/...\nLinux: ~/.config/..."]
+    LOOP --> PATH["Construct full path:<br/>base_path + / + relative_path<br/><br/>macOS: ~/Library/Application Support/...<br/>Linux: ~/.config/..."]
     PATH --> VALIDATE["validate_browser_installation()"]
     VALIDATE --> VALID{Valid?}
-    VALID -->|No| SKIP["Skip browser\n(skipped_count++)"]
-    VALID -->|Yes| DEDUP{"Path already in\nseen_paths?"}
-    DEDUP -->|Yes| SKIP_DUP["Skip browser\n(path claimed by another browser)"]
-    DEDUP -->|No| ADD["Add to detected list\nAdd path to seen_paths"]
+    VALID -->|No| SKIP["Skip browser<br/>(skipped_count++)"]
+    VALID -->|Yes| DEDUP{"Path already in<br/>seen_paths?"}
+    DEDUP -->|Yes| SKIP_DUP["Skip browser<br/>(path claimed by another browser)"]
+    DEDUP -->|No| ADD["Add to detected list<br/>Add path to seen_paths"]
 
     SKIP --> NEXT[Next browser config]
     SKIP_DUP --> NEXT
@@ -261,23 +261,23 @@ Get-ClaudeNativeHostPath:
 
 ```mermaid
 flowchart TB
-    START(["create_manifests(browser_path, host_path, code_host_path)"]) --> EXISTING{"Desktop manifest\nalready exists?"}
-    EXISTING -->|"Yes + no --backup"| PROMPT{"User confirms\noverwrite?"}
+    START(["create_manifests(browser_path, host_path, code_host_path)"]) --> EXISTING{"Desktop manifest<br/>already exists?"}
+    EXISTING -->|"Yes + no --backup"| PROMPT{"User confirms<br/>overwrite?"}
     EXISTING -->|"Yes + --backup"| BACKUP["Backup existing files"]
     EXISTING -->|No| MKDIR
 
-    PROMPT -->|No| ABORT["Return 1\n(Skipped)"]
+    PROMPT -->|No| ABORT["Return 1<br/>(Skipped)"]
     PROMPT -->|Yes| MKDIR
     BACKUP --> MKDIR
 
-    MKDIR["mkdir -p NativeMessagingHosts/"] --> TEMP["Write desktop manifest\nvia temp file (atomic)"]
-    TEMP --> MV["mv temp → com.anthropic.claude_browser_extension.json\nchmod 644"]
-    MV --> CODE_CHECK{"Claude Code host\nbinary exists?"}
+    MKDIR["mkdir -p NativeMessagingHosts/"] --> TEMP["Write desktop manifest<br/>via temp file (atomic)"]
+    TEMP --> MV["mv temp → com.anthropic.claude_browser_extension.json<br/>chmod 644"]
+    MV --> CODE_CHECK{"Claude Code host<br/>binary exists?"}
 
-    CODE_CHECK -->|Yes| CODE_WRITE["Write code manifest\ncom.anthropic.claude_code_browser_extension.json"]
-    CODE_CHECK -->|No| PARTIAL["Return 2\n(Partial: desktop only)"]
+    CODE_CHECK -->|Yes| CODE_WRITE["Write code manifest<br/>com.anthropic.claude_code_browser_extension.json"]
+    CODE_CHECK -->|No| PARTIAL["Return 2<br/>(Partial: desktop only)"]
 
-    CODE_WRITE --> SUCCESS["Return 0\n(Full success)"]
+    CODE_WRITE --> SUCCESS["Return 0<br/>(Full success)"]
 
     style ABORT fill:#fff3cd,stroke:#ffc107,color:#000
     style PARTIAL fill:#fff3cd,stroke:#ffc107,color:#000
