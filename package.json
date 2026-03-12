@@ -8,7 +8,9 @@
   },
   "scripts": {
     "build": "tsc && node -e \"const fs=require('fs');const p='dist/host.js';const c=fs.readFileSync(p,'utf8');if(!c.startsWith('#!')){fs.writeFileSync(p,'#!/usr/bin/env node\\n'+c)};fs.chmodSync(p,0o755)\" && ln -sf host.js dist/host",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "install:linux": "bash install-linux.sh",
+    "uninstall:linux": "bash uninstall-linux.sh"
   },
   "license": "MIT",
   "devDependencies": {
