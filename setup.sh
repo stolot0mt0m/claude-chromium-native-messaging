@@ -144,32 +144,25 @@ validate_path() {
         return 1
     fi
 
-    # Resolve the path (follow symlinks, normalize ./ and ../)
-    local resolved_path
-    if ! resolved_path="$(realpath -m "$path" 2>/dev/null)"; then
-        print_error "Custom browser path does not exist: $path"
-        return 1
-    fi
-
-    # Security: reject path traversal attempts (resolved path should not escape via ..)
-    if [[ "$resolved_path" != "$path" ]] && [[ "$path" == *..* ]]; then
+    # Security: reject path traversal attempts
+    if [[ "$path" == *..* ]]; then
         print_error "Path traversal not allowed: $path"
         return 1
     fi
 
     # Check that the path actually exists as a directory
-    if [[ ! -d "$resolved_path" ]]; then
-        print_error "Custom browser path does not exist: $resolved_path"
+    if [[ ! -d "$path" ]]; then
+        print_error "Custom browser path does not exist: $path"
         return 1
     fi
 
     # Check the directory is readable
-    if [[ ! -r "$resolved_path" ]]; then
-        print_error "Custom browser path is not readable: $resolved_path"
+    if [[ ! -r "$path" ]]; then
+        print_error "Custom browser path is not readable: $path"
         return 1
     fi
 
-    echo "$resolved_path"
+    echo "$path"
 }
 
 # =============================================================================
