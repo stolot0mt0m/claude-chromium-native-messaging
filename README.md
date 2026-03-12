@@ -29,6 +29,48 @@ cd claude-chromium-native-messaging
 .\setup.ps1
 ```
 
+## Linux Installation (Recommended)
+
+**Fastest way to get started on Linux:**
+
+```bash
+git clone https://github.com/stolot0mt0m/claude-chromium-native-messaging.git
+cd claude-chromium-native-messaging
+./install-linux.sh
+```
+
+This script:
+1. ✅ Checks for Node.js 18+ (installs if missing)
+2. ✅ Builds the native messaging host from source
+3. ✅ Registers manifests for Chrome, Chromium, Brave, Edge, and other Chromium browsers
+4. ✅ Prompts for your Claude API key (from [console.anthropic.com](https://console.anthropic.com/))
+5. ✅ Works **without Claude Desktop**
+
+> **Note:** This is the recommended approach for Linux. It uses "Direct API Mode" — the native host talks directly to Claude's API, not through Claude Desktop.
+
+### Prerequisites
+
+- **Node.js 18+** (the script can install it for you if missing)
+- **Chrome, Chromium, Brave, or other Chromium browser** (must be launched at least once)
+- **Claude API key** (create one at [console.anthropic.com/api/keys](https://console.anthropic.com/api/keys) — free tier available)
+
+### Next Steps After Installation
+
+1. **Completely quit your browser** (check `ps aux | grep chrome` to verify no processes remain)
+2. **Restart the browser**
+3. **Install the Claude extension** if not already installed: [Chrome Web Store](https://chrome.google.com/webstore/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn)
+4. **Open Claude in the side panel** — it should now respond via the native host
+
+### Need More Help?
+
+See [`docs/linux-setup.md`](docs/linux-setup.md) for:
+- Distro-specific setup (Ubuntu, Fedora, Arch)
+- How to verify the installation
+- Troubleshooting guide
+- Getting a Claude API key
+
+---
+
 ## Features
 
 - **31+ Supported Browsers** - Brave, Arc, Vivaldi, Edge, Opera, and more
@@ -37,6 +79,7 @@ cd claude-chromium-native-messaging
 - **Interactive Setup** - Select which browsers to configure
 - **JSON Configuration** - Easy to extend with new browsers
 - **Test Suite** - Automated tests for reliability
+- **Linux Direct API Mode** - Works without Claude Desktop on Linux
 
 ## The Problem
 
