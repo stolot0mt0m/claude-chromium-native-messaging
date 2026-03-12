@@ -112,3 +112,43 @@ Added a top-level `_documentation` object explaining path conventions and custom
 - `teardown_test_env()` unconditionally cleans up temp dirs
 - No secrets, credentials, or network access in tests
 - Path traversal test verifies `validate_path()` rejects `..` sequences
+
+---
+
+# Review: Linux Native Messaging Host
+
+## Architecture Decisions
+
+### TypeScript Node.js Host
+Created a standalone native messaging host in TypeScript that implements the Chrome Native Messaging protocol (4-byte LE length prefix + JSON). Runs as a Node.js script with `#!/usr/bin/env node` shebang.
+
+### Platform Detection Strategy
+- **Linux**: Direct Claude API mode using API key from `~/.config/claude-chromium-native-messaging/config.json`. Falls back to passthrough if Claude Desktop binary is found.
+- **macOS/Windows**: Passthrough to Claude Desktop's `chrome-native-host` binary.
+
+### Non-Breaking setup.sh Changes
+The Claude Desktop check is now non-fatal on Linux. When Desktop is not found, `setup.sh` auto-builds and uses the Node.js API host. On macOS, the existing fatal-exit behavior is preserved.
+
+### Zero Runtime Dependencies
+The host uses only Node.js built-in modules (`https`, `fs`, `path`, `os`, `child_process`). No npm runtime dependencies — `typescript` and `@types/node` are devDependencies only.
+
+## Known Limitations
+
+- Requires Node.js on the system (for `#!/usr/bin/env node` shebang)
+- API mode requires user's own Anthropic API key
+- Extension's exact message protocol is not publicly documented; host handles `content`, `text`, and `message` fields
+- Conversation history not persisted between process invocations (Chrome NM protocol spawns a new process per connection)
+
+## Security Review
+
+- API key stored in user-config file with recommended `chmod 600` permissions
+- API key never logged or included in error responses
+- Message size validated (1 MB limit per Chrome spec)
+- No shell execution or eval of incoming messages
+- HTTPS-only connection to `api.anthropic.com`
+
+## Scalability Notes
+
+- Each browser connection spawns a separate host process (Chrome NM design)
+- No connection pooling needed — one process per connection
+- For streaming support, future enhancement could use SSE

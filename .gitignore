@@ -47,3 +47,8 @@ coverage/
 .env.local
 *.local
 .repomap.tags.cache.v1/
+
+# Node.js
+node_modules/
+dist/
+package-lock.json

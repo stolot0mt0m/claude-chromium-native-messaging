@@ -231,6 +231,33 @@ get_claude_code_native_host_path() {
     echo "$HOME/.claude/chrome/chrome-native-host"
 }
 
+get_linux_api_host_path() {
+    # Returns the path to the Node.js-based native messaging host
+    # that connects directly to the Claude API (no Desktop dependency)
+    local host_js="$SCRIPT_DIR/dist/host.js"
+    local wrapper="$SCRIPT_DIR/dist/host"
+
+    if [[ -f "$host_js" ]]; then
+        echo "$wrapper"
+        return 0
+    fi
+
+    # Try to build if source exists but dist doesn't
+    if [[ -f "$SCRIPT_DIR/package.json" ]] && [[ -d "$SCRIPT_DIR/src" ]]; then
+        print_info "Building native messaging host..."
+        if command -v npm &>/dev/null; then
+            (cd "$SCRIPT_DIR" && npm install --ignore-scripts 2>/dev/null && npm run build 2>/dev/null)
+            if [[ -f "$host_js" ]]; then
+                echo "$wrapper"
+                return 0
+            fi
+        fi
+        print_warning "Failed to build native messaging host (npm required)"
+    fi
+
+    echo ""
+}
+
 # =============================================================================
 # Browser Configuration
 # =============================================================================
@@ -500,8 +527,14 @@ create_manifests() {
     local desktop_manifest="$nmh_dir/com.anthropic.claude_browser_extension.json"
     local code_manifest="$nmh_dir/com.anthropic.claude_code_browser_extension.json"
 
+    # Skip Desktop manifest if no native host path provided
+    local skip_desktop=false
+    if [[ -z "$native_host_path" ]]; then
+        skip_desktop=true
+    fi
+
     # Check for existing files and prompt for overwrite
-    if [[ -f "$desktop_manifest" ]] && [[ "$BACKUP" == false ]] && [[ "$DRY_RUN" == false ]]; then
+    if [[ "$skip_desktop" == false ]] && [[ -f "$desktop_manifest" ]] && [[ "$BACKUP" == false ]] && [[ "$DRY_RUN" == false ]]; then
         print_warning "Manifest already exists: $desktop_manifest"
         read -p "Overwrite? [y/N] " -n 1 -r
         echo
@@ -513,7 +546,7 @@ create_manifests() {
 
     # Create backups if requested
     if [[ "$BACKUP" == true ]]; then
-        create_backup "$desktop_manifest"
+        [[ "$skip_desktop" == false ]] && create_backup "$desktop_manifest"
         create_backup "$code_manifest"
     fi
 
@@ -527,24 +560,13 @@ create_manifests() {
     \"$origin\""
     done
 
-    # Prepare desktop manifest content
-    local desktop_content
-    desktop_content=$(cat << EOF
-{
-  "name": "com.anthropic.claude_browser_extension",
-  "description": "Claude Browser Extension Native Host",
-  "path": "$native_host_path",
-  "type": "stdio",
-  "allowed_origins": [$origins_json
-  ]
-}
-EOF
-)
-
     if [[ "$DRY_RUN" == true ]]; then
         print_dry_run "Would create directory: $nmh_dir"
-        print_dry_run "Would create file: $desktop_manifest"
-        print_verbose "Content:\n$desktop_content"
+        if [[ "$skip_desktop" == false ]]; then
+            print_dry_run "Would create file: $desktop_manifest"
+        else
+            print_verbose "Skipping Desktop manifest (no native host path)"
+        fi
 
         if [[ -f "$code_native_host_path" ]]; then
             print_dry_run "Would create file: $code_manifest"
@@ -558,21 +580,39 @@ EOF
         return 1
     fi
 
-    # Use temp file for atomic creation
     local temp_file
-    temp_file=$(mktemp) || {
-        print_error "Failed to create temp file"
-        return 1
-    }
-    trap "rm -f '$temp_file'" RETURN
+    local desktop_created=false
 
-    # Write desktop manifest
-    echo "$desktop_content" > "$temp_file"
-    if ! mv "$temp_file" "$desktop_manifest"; then
-        print_error "Failed to create manifest: $desktop_manifest"
-        return 1
+    # Write desktop manifest (skip if no native host path)
+    if [[ "$skip_desktop" == false ]]; then
+        local desktop_content
+        desktop_content=$(cat << EOF
+{
+  "name": "com.anthropic.claude_browser_extension",
+  "description": "Claude Browser Extension Native Host",
+  "path": "$native_host_path",
+  "type": "stdio",
+  "allowed_origins": [$origins_json
+  ]
+}
+EOF
+)
+
+        # Use temp file for atomic creation
+        temp_file=$(mktemp) || {
+            print_error "Failed to create temp file"
+            return 1
+        }
+        trap "rm -f '$temp_file'" RETURN
+
+        echo "$desktop_content" > "$temp_file"
+        if ! mv "$temp_file" "$desktop_manifest"; then
+            print_error "Failed to create manifest: $desktop_manifest"
+            return 1
+        fi
+        chmod 644 "$desktop_manifest"
+        desktop_created=true
     fi
-    chmod 644 "$desktop_manifest"
 
     # Create Claude Code manifest (only if Claude Code native host exists)
     local code_created=false
@@ -602,10 +642,12 @@ EOF
         fi
     fi
 
-    if [[ "$code_created" == true ]]; then
+    if [[ "$desktop_created" == true ]] && [[ "$code_created" == true ]]; then
         return 0
+    elif [[ "$desktop_created" == true ]] || [[ "$code_created" == true ]]; then
+        return 2  # Partial success (one manifest only)
     else
-        return 2  # Partial success (desktop only)
+        return 1  # Nothing created
     fi
 }
 
@@ -828,12 +870,28 @@ main() {
     # Check Claude native host
     local native_host_path
     native_host_path=$(get_claude_native_host_path)
+    local linux_api_host_path=""
+
     if [[ -z "$native_host_path" ]]; then
-        print_error "Claude Desktop not found. Please install Claude Desktop first."
-        print_info "Download from: https://claude.ai/download"
-        exit 1
+        if [[ "$OS" == "linux" ]]; then
+            # On Linux, Claude Desktop is not required — use API host instead
+            linux_api_host_path=$(get_linux_api_host_path)
+            if [[ -n "$linux_api_host_path" ]]; then
+                print_success "Using Linux API host (no Claude Desktop required): $linux_api_host_path"
+                native_host_path="$linux_api_host_path"
+            else
+                print_warning "Claude Desktop not found — Desktop manifest will be skipped."
+                print_info "Install Claude Desktop from: https://claude.ai/download"
+                print_info "Or build the API host: cd $SCRIPT_DIR && npm install && npm run build"
+            fi
+        else
+            print_error "Claude Desktop not found. Please install Claude Desktop first."
+            print_info "Download from: https://claude.ai/download"
+            exit 1
+        fi
+    else
+        print_success "Found Claude Desktop native host: $native_host_path"
     fi
-    print_success "Found Claude Desktop native host: $native_host_path"
 
     local code_native_host_path
     code_native_host_path=$(get_claude_code_native_host_path)
@@ -841,6 +899,13 @@ main() {
         print_success "Found Claude Code native host: $code_native_host_path"
     else
         print_warning "Claude Code native host not found (optional)"
+    fi
+
+    # On Linux without any host, we can still configure Claude Code manifests
+    if [[ -z "$native_host_path" ]] && [[ ! -f "$code_native_host_path" ]]; then
+        print_error "No native messaging host found (neither Desktop, API host, nor Claude Code)."
+        print_info "Build the API host: cd $SCRIPT_DIR && npm install && npm run build"
+        exit 1
     fi
 
     echo ""
