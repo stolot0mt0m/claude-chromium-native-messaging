@@ -320,8 +320,10 @@ validate_browser_installation() {
     fi
 
     # Check for Chromium profile markers: Default/, Preferences, Local State
-    # A real Chromium data dir has at least one of these
+    # A real Chromium data dir has at least one of these.
+    # Defaults/ is used by Orion (WebKit-based browser with Chrome extension support).
     if [[ -d "$browser_path/Default" ]] || \
+       [[ -d "$browser_path/Defaults" ]] || \
        [[ -f "$browser_path/Preferences" ]] || \
        [[ -f "$browser_path/Local State" ]]; then
         return 0
@@ -445,7 +447,10 @@ check_extension_installed() {
     local browser_path="$1"
     local extensions_path="$browser_path/Default/Extensions/$CLAUDE_OFFICIAL_EXTENSION_ID"
 
-    if [[ -d "$extensions_path" ]]; then
+    # Orion uses Defaults/ instead of Default/
+    local orion_extensions_path="$browser_path/Defaults/Extensions/$CLAUDE_OFFICIAL_EXTENSION_ID"
+
+    if [[ -d "$extensions_path" ]] || [[ -d "$orion_extensions_path" ]]; then
         return 0
     fi
 
