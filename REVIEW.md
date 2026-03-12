@@ -152,3 +152,48 @@ The host uses only Node.js built-in modules (`https`, `fs`, `path`, `os`, `child
 - Each browser connection spawns a separate host process (Chrome NM design)
 - No connection pooling needed — one process per connection
 - For streaming support, future enhancement could use SSE
+
+---
+
+# Review: Linux Installer Scripts (install-linux.sh / uninstall-linux.sh)
+
+## Architecture Decisions
+
+### Two-script approach (install + uninstall)
+Separate scripts rather than flags (`--install` / `--uninstall`) keep each script focused and avoid flag-parsing complexity. The constants block at the top of each script is intentionally duplicated so they are independently runnable without sourcing each other.
+
+### Host deployed as Node.js script (not compiled binary)
+`dist/host.js` is deployed with a `#!/usr/bin/env node` shebang and `chmod 755`. No compilation step — Node.js is the runtime. The manifest `path` field points to this file directly.
+
+### User-level manifests always installed; system-wide optional
+User manifests (`~/.config/google-chrome/NativeMessagingHosts/`, `~/.config/chromium/NativeMessagingHosts/`) are installed unconditionally. System-wide paths (`/etc/opt/chrome/`, `/etc/chromium/`) are offered interactively only when `sudo` is available, because: (a) they require elevated privileges, (b) most desktop users don't need them, and (c) forcing sudo prompts in an unattended install is bad UX.
+
+### Idempotency via content comparison
+- **Manifests**: existing file content is compared with new content; file write is skipped if identical.
+- **Host binary**: `diff -q` comparison; copy skipped if files are identical.
+- **Config**: `grep`-based check for non-empty `apiKey`; prompt skipped if key already present.
+
+### API key input via `read -rsp` (silent)
+Silent read prevents key from appearing in terminal history or output. The key is written to `~/.config/claude-chromium-native-messaging/config.json` with `chmod 600` immediately after.
+
+### OS detection via `/etc/os-release` ID field
+Uses `grep` to extract `ID=` rather than `source /etc/os-release` to avoid polluting the script's environment with all the variables from that file.
+
+## Known Limitations
+
+- **No PATH check for `node` after install**: After installing Node.js, the user must open a new shell for PATH changes to take effect. The script retries once after prompting, but if the user's shell doesn't have `node` in the current PATH, it will fail with a clear error.
+- **API key format validation is heuristic**: Only checks for `sk-ant-` prefix. A malformed key will be accepted and will fail at runtime when the extension sends a request.
+- **No verification that the extension is installed**: The script only registers the manifest. If the Claude browser extension isn't installed, the native host will never be invoked.
+- **System manifests in uninstall are skipped if no sudo**: Script prints manual removal commands instead of silently leaving orphan files.
+- **Config model hardcoded to `claude-opus-4-6`**: Default model in generated config. Users can edit `~/.config/claude-chromium-native-messaging/config.json` to change it.
+
+## Scalability Notes
+N/A — these are one-shot installation scripts, not long-running services.
+
+## Security Review
+
+- API key written with `chmod 600` immediately after creation — not world-readable
+- `read -rsp` prevents key from appearing in terminal output or shell history
+- No `eval`, no `$()` with untrusted input, no command injection vectors
+- `sudo` is only invoked for system-wide manifest installation when explicitly confirmed by the user
+- All file paths are hardcoded or derived from `$HOME` — no user-controlled path inputs
