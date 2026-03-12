@@ -1,20 +1,10 @@
 {
-  "name": "claude-chromium-native-messaging-host",
-  "version": "1.0.0",
-  "description": "Native messaging host for Claude browser extension (Linux direct API mode)",
-  "main": "dist/host.js",
-  "bin": {
-    "claude-native-host": "dist/host.js"
-  },
+  "name": "claude-chromium-native-messaging",
+  "version": "1.1.0",
+  "description": "Configure Native Messaging Host for Claude browser extension in alternative Chromium browsers",
   "scripts": {
-    "build": "tsc && node -e \"const fs=require('fs');const p='dist/host.js';const c=fs.readFileSync(p,'utf8');if(!c.startsWith('#!')){fs.writeFileSync(p,'#!/usr/bin/env node\\n'+c)};fs.chmodSync(p,0o755)\" && ln -sf host.js dist/host",
-    "clean": "rm -rf dist",
     "install:linux": "bash install-linux.sh",
     "uninstall:linux": "bash uninstall-linux.sh"
   },
-  "license": "MIT",
-  "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.11.0"
-  }
+  "license": "MIT"
 }

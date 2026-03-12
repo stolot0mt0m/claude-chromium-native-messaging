@@ -231,32 +231,6 @@ get_claude_code_native_host_path() {
     echo "$HOME/.claude/chrome/chrome-native-host"
 }
 
-get_linux_api_host_path() {
-    # Returns the path to the Node.js-based native messaging host
-    # that connects directly to the Claude API (no Desktop dependency)
-    local host_js="$SCRIPT_DIR/dist/host.js"
-    local wrapper="$SCRIPT_DIR/dist/host"
-
-    if [[ -f "$host_js" ]]; then
-        echo "$wrapper"
-        return 0
-    fi
-
-    # Try to build if source exists but dist doesn't
-    if [[ -f "$SCRIPT_DIR/package.json" ]] && [[ -d "$SCRIPT_DIR/src" ]]; then
-        print_info "Building native messaging host..."
-        if command -v npm &>/dev/null; then
-            (cd "$SCRIPT_DIR" && npm install --ignore-scripts 2>/dev/null && npm run build 2>/dev/null)
-            if [[ -f "$host_js" ]]; then
-                echo "$wrapper"
-                return 0
-            fi
-        fi
-        print_warning "Failed to build native messaging host (npm required)"
-    fi
-
-    echo ""
-}
 
 # =============================================================================
 # Browser Configuration
@@ -870,20 +844,12 @@ main() {
     # Check Claude native host
     local native_host_path
     native_host_path=$(get_claude_native_host_path)
-    local linux_api_host_path=""
 
     if [[ -z "$native_host_path" ]]; then
         if [[ "$OS" == "linux" ]]; then
-            # On Linux, Claude Desktop is not required — use API host instead
-            linux_api_host_path=$(get_linux_api_host_path)
-            if [[ -n "$linux_api_host_path" ]]; then
-                print_success "Using Linux API host (no Claude Desktop required): $linux_api_host_path"
-                native_host_path="$linux_api_host_path"
-            else
-                print_warning "Claude Desktop not found — Desktop manifest will be skipped."
-                print_info "Install Claude Desktop from: https://claude.ai/download"
-                print_info "Or build the API host: cd $SCRIPT_DIR && npm install && npm run build"
-            fi
+            # On Linux, Claude Desktop is not available — Desktop manifest will be skipped
+            print_warning "Claude Desktop not found — Desktop manifest will be skipped."
+            print_info "This is expected on Linux. Claude Code provides the native host."
         else
             print_error "Claude Desktop not found. Please install Claude Desktop first."
             print_info "Download from: https://claude.ai/download"
@@ -898,13 +864,25 @@ main() {
     if [[ -f "$code_native_host_path" ]]; then
         print_success "Found Claude Code native host: $code_native_host_path"
     else
-        print_warning "Claude Code native host not found (optional)"
+        if [[ "$OS" == "linux" ]]; then
+            print_warning "Claude Code native host not found."
+            print_info "Install Claude Code CLI: npm install -g @anthropic-ai/claude-code"
+            print_info "Then run 'claude' and use /chrome to create the native host."
+        else
+            print_warning "Claude Code native host not found (optional)"
+        fi
     fi
 
-    # On Linux without any host, we can still configure Claude Code manifests
-    if [[ -z "$native_host_path" ]] && [[ ! -f "$code_native_host_path" ]]; then
-        print_error "No native messaging host found (neither Desktop, API host, nor Claude Code)."
-        print_info "Build the API host: cd $SCRIPT_DIR && npm install && npm run build"
+    # On Linux, at least Claude Code must be available
+    if [[ "$OS" == "linux" ]] && [[ -z "$native_host_path" ]] && [[ ! -f "$code_native_host_path" ]]; then
+        print_error "No native messaging host found."
+        print_info "On Linux, Claude Code CLI is required."
+        print_info "Install: npm install -g @anthropic-ai/claude-code"
+        exit 1
+    fi
+
+    # On macOS, Claude Desktop is required (already exits above if not found)
+    if [[ "$OS" != "linux" ]] && [[ -z "$native_host_path" ]]; then
         exit 1
     fi
 

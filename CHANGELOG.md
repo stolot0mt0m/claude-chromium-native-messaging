@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Linux: Replaced Direct API Mode with Claude Code CLI integration**
+  - Linux now uses Claude Code CLI's native messaging host (`~/.claude/chrome/chrome-native-host`) instead of a custom Node.js API host
+  - `install-linux.sh` simplified: no longer requires Node.js build, npm, or API key — just verifies Claude Code is installed and copies manifests to additional browser directories
+  - `uninstall-linux.sh` simplified: only removes manifests, no config/API key cleanup needed
+  - Removed TypeScript source files (`src/`) and build toolchain — no longer needed
+  - Updated `setup.sh` to remove `get_linux_api_host_path()` and Direct API Mode fallback
+  - Linux prerequisite changed from "Node.js 18+ and Claude API key" to "Claude Code CLI"
+- Updated documentation: README, `docs/linux-setup.md`, and `docs/linux-porting-analysis.md` rewritten to reflect Claude Code CLI approach
+
+### Removed
+- `src/api-client.ts` — Direct Claude API client (no longer needed)
+- `src/config.ts` — API key configuration management (no longer needed)
+- `src/host.ts` — Custom native messaging host entry point (no longer needed)
+- `src/passthrough.ts` — Claude Desktop binary passthrough (no longer needed)
+- `src/protocol.ts` — Chrome Native Messaging protocol implementation (no longer needed)
+- `tsconfig.json` — TypeScript configuration (no longer needed)
+- `package.json` build scripts and TypeScript devDependencies
+
 ### Fixed
 - PowerShell `-Verbose` parameter conflict: removed explicit `[switch]$Verbose` declaration that clashed with the common parameter provided by `[CmdletBinding()]`; `Write-VerboseMessage` now checks `$VerbosePreference` instead
 - Claude Desktop installed via Windows Store (MSIX) is now detected automatically (#7)

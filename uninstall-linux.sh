@@ -1,7 +1,8 @@
 #!/bin/bash
-# uninstall-linux.sh - Removes all files installed by install-linux.sh
+# uninstall-linux.sh - Removes manifests installed by install-linux.sh
 #
-# Reverses: host binary, manifests (user + system), and optionally the config.
+# Only removes manifests from alternative browser directories.
+# Does NOT touch Claude Code's own configuration.
 #
 # Usage: ./uninstall-linux.sh
 
@@ -11,23 +12,38 @@ set -euo pipefail
 # Constants — must mirror install-linux.sh exactly
 # ═══════════════════════════════════════════════════════════════════════════
 
-readonly MANIFEST_NAME="com.claude.chromium_native"
-readonly HOST_INSTALL_DIR="${HOME}/.local/share/claude-chromium-native-messaging"
-readonly CONFIG_DIR="${HOME}/.config/claude-chromium-native-messaging"
-readonly CONFIG_FILE="${CONFIG_DIR}/config.json"
+readonly CLAUDE_CODE_MANIFEST_NAME="com.anthropic.claude_code_browser_extension"
 
-declare -ra USER_MANIFEST_DIRS=(
-    "${HOME}/.config/google-chrome/NativeMessagingHosts"
-    "${HOME}/.config/chromium/NativeMessagingHosts"
-)
-
-declare -ra SYSTEM_MANIFEST_DIRS=(
-    "/etc/opt/chrome/native-messaging-hosts"
-    "/etc/chromium/native-messaging-hosts"
+# Same browser directories as install-linux.sh
+declare -ra EXTRA_BROWSER_DIRS=(
+    "$HOME/.config/chromium"
+    "$HOME/.config/BraveSoftware/Brave-Browser"
+    "$HOME/.config/vivaldi"
+    "$HOME/.config/opera"
+    "$HOME/.config/opera-gx"
+    "$HOME/.config/yandex-browser"
+    "$HOME/.config/naver-whale"
+    "$HOME/.config/coccoc"
+    "$HOME/.config/slimjet"
+    "$HOME/.config/ungoogled-chromium"
+    "$HOME/.config/Sidekick"
+    "$HOME/.config/GensparkSoftware/Genspark-Browser"
+    "$HOME/.config/net.imput.helium"
+    "$HOME/.config/iron"
+    "$HOME/.config/cent-browser"
+    "$HOME/.config/comodo-dragon"
+    "$HOME/.config/avast-secure-browser"
+    "$HOME/.config/avg-secure-browser"
+    "$HOME/.config/epic"
+    "$HOME/.config/torch"
+    "$HOME/.config/Maxthon"
+    "$HOME/.config/iridium"
+    "$HOME/.config/Orion"
+    "$HOME/.config/Falkon"
+    "$HOME/.config/Colibri"
 )
 
 # Colors
-readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
 readonly BLUE='\033[0;34m'
@@ -38,126 +54,29 @@ readonly NC='\033[0m'
 # ═══════════════════════════════════════════════════════════════════════════
 
 ok()   { echo -e "${GREEN}✓${NC} $*"; }
-warn() { echo -e "${YELLOW}⚠${NC} $*"; }
 info() { echo -e "${BLUE}ℹ${NC} $*"; }
 step() { echo -e "\n${BLUE}▶${NC} $*"; }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Removal helpers
+# Removal
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Removes a file if it exists; reports status either way
-remove_file() {
-    local path="$1"
-    if [[ -f "$path" ]]; then
-        rm -f "$path"
-        ok "Removed: ${path}"
-    else
-        info "Not found (skipping): ${path}"
-    fi
-}
+remove_manifests() {
+    step "Removing manifests from alternative browser directories..."
 
-# Removes a directory if it exists and is empty
-remove_dir_if_empty() {
-    local dir="$1"
-    if [[ -d "$dir" ]] && [[ -z "$(ls -A "$dir" 2>/dev/null)" ]]; then
-        rmdir "$dir"
-        ok "Removed empty directory: ${dir}"
-    fi
-}
+    local removed=0
 
-# Removes a system file using sudo; reports status
-remove_system_file() {
-    local path="$1"
-    if sudo test -f "$path" 2>/dev/null; then
-        sudo rm -f "$path"
-        ok "Removed (system): ${path}"
-    else
-        info "Not found (skipping): ${path}"
-    fi
-}
-
-# ═══════════════════════════════════════════════════════════════════════════
-# Removal steps
-# ═══════════════════════════════════════════════════════════════════════════
-
-# Removes manifests from user-level NativeMessagingHosts directories
-remove_user_manifests() {
-    step "Removing user-level manifests..."
-    for dir in "${USER_MANIFEST_DIRS[@]}"; do
-        remove_file "${dir}/${MANIFEST_NAME}.json"
-    done
-}
-
-# Removes manifests from system-wide directories (requires sudo)
-remove_system_manifests() {
-    step "Removing system-wide manifests..."
-
-    if ! command -v sudo &>/dev/null; then
-        info "sudo not available — skipping system-wide manifests"
-        echo "  To remove manually:"
-        for dir in "${SYSTEM_MANIFEST_DIRS[@]}"; do
-            echo "    sudo rm -f ${dir}/${MANIFEST_NAME}.json"
-        done
-        return
-    fi
-
-    # Check if any system manifest exists before asking for sudo
-    local found_any=false
-    for dir in "${SYSTEM_MANIFEST_DIRS[@]}"; do
-        if sudo test -f "${dir}/${MANIFEST_NAME}.json" 2>/dev/null; then
-            found_any=true
-            break
+    for browser_dir in "${EXTRA_BROWSER_DIRS[@]}"; do
+        local manifest_path="${browser_dir}/NativeMessagingHosts/${CLAUDE_CODE_MANIFEST_NAME}.json"
+        if [[ -f "$manifest_path" ]]; then
+            rm -f "$manifest_path"
+            ok "Removed: ${manifest_path}"
+            ((removed++)) || true
         fi
     done
 
-    if [[ "$found_any" == false ]]; then
-        info "No system-wide manifests found, skipping"
-        return
-    fi
-
-    echo ""
-    read -rp "Remove system-wide manifests? (requires sudo) [y/N] " remove_system
-    if [[ "${remove_system,,}" == "y" ]]; then
-        for dir in "${SYSTEM_MANIFEST_DIRS[@]}"; do
-            remove_system_file "${dir}/${MANIFEST_NAME}.json"
-        done
-    else
-        info "Keeping system-wide manifests"
-    fi
-}
-
-# Removes the host binary, all module JS files, and the install directory
-remove_host_binary() {
-    step "Removing host binary and module files..."
-    if [[ -d "${HOST_INSTALL_DIR}" ]]; then
-        for f in "${HOST_INSTALL_DIR}"/*.js "${HOST_INSTALL_DIR}/host"; do
-            remove_file "$f"
-        done
-        remove_dir_if_empty "${HOST_INSTALL_DIR}"
-    else
-        info "Host directory not found (skipping): ${HOST_INSTALL_DIR}"
-    fi
-}
-
-# Prompts the user before removing the config file (contains API key)
-remove_config() {
-    step "Handling config file..."
-
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        info "Config file not found, nothing to remove"
-        return
-    fi
-
-    echo ""
-    warn "Config file contains your Claude API key: ${CONFIG_FILE}"
-    read -rp "Remove it? [y/N] " remove_cfg
-    if [[ "${remove_cfg,,}" == "y" ]]; then
-        rm -f "$CONFIG_FILE"
-        ok "Removed: ${CONFIG_FILE}"
-        remove_dir_if_empty "${CONFIG_DIR}"
-    else
-        info "Keeping config file"
+    if [[ $removed -eq 0 ]]; then
+        info "No manifests found to remove."
     fi
 }
 
@@ -168,16 +87,16 @@ remove_config() {
 main() {
     echo -e "${BLUE}Claude Native Messaging — Linux Uninstaller${NC}"
     echo ""
+    echo "This removes manifests installed by install-linux.sh."
+    echo "Claude Code's own configuration is not affected."
+    echo ""
 
-    remove_user_manifests
-    remove_system_manifests
-    remove_host_binary
-    remove_config
+    remove_manifests
 
     echo ""
     echo -e "${GREEN}Uninstall complete.${NC}"
     echo ""
-    info "Restart Chrome/Chromium to apply changes."
+    info "Restart your browser for changes to take effect."
     echo ""
 }
 

@@ -29,9 +29,16 @@ cd claude-chromium-native-messaging
 .\setup.ps1
 ```
 
-## Linux Installation (Recommended)
+## Linux Installation
 
-**Fastest way to get started on Linux:**
+On Linux, **Claude Code CLI** provides the native messaging host. This tool extends Claude Code's browser support to additional Chromium browsers that Claude Code doesn't configure automatically.
+
+### Prerequisites
+
+- **[Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)** installed and set up
+- **Chrome, Chromium, Brave, or other Chromium browser** installed
+
+### Option 1: Quick Setup (Recommended)
 
 ```bash
 git clone https://github.com/stolot0mt0m/claude-chromium-native-messaging.git
@@ -40,34 +47,41 @@ cd claude-chromium-native-messaging
 ```
 
 This script:
-1. ✅ Checks for Node.js 18+ (installs if missing)
-2. ✅ Builds the native messaging host from source
-3. ✅ Registers manifests for Chrome, Chromium, Brave, Edge, and other Chromium browsers
-4. ✅ Prompts for your Claude API key (from [console.anthropic.com](https://console.anthropic.com/))
-5. ✅ Works **without Claude Desktop**
+1. Verifies Claude Code CLI is installed and its native host exists
+2. Detects which alternative Chromium browsers are installed
+3. Copies the native messaging manifest to each browser's directory
 
-> **Note:** This is the recommended approach for Linux. It uses "Direct API Mode" — the native host talks directly to Claude's API, not through Claude Desktop.
+### Option 2: Interactive Setup
 
-### Prerequisites
+```bash
+./setup.sh
+```
 
-- **Node.js 18+** (the script can install it for you if missing)
-- **Chrome, Chromium, Brave, or other Chromium browser** (must be launched at least once)
-- **Claude API key** (create one at [console.anthropic.com/api/keys](https://console.anthropic.com/api/keys) — free tier available)
+The interactive setup lets you select specific browsers and provides more control.
 
-### Next Steps After Installation
+### How It Works on Linux
+
+Claude Code CLI installs its native messaging host at `~/.claude/chrome/chrome-native-host` and registers it for Google Chrome and Microsoft Edge. This tool copies that registration to additional browsers:
+
+```
+Claude Code CLI
+    └── installs native host at ~/.claude/chrome/chrome-native-host
+    └── registers for: Chrome, Edge (automatic)
+
+This tool
+    └── registers for: Brave, Vivaldi, Chromium, Opera, 25+ more browsers
+```
+
+### After Installation
 
 1. **Completely quit your browser** (check `ps aux | grep chrome` to verify no processes remain)
 2. **Restart the browser**
 3. **Install the Claude extension** if not already installed: [Chrome Web Store](https://chrome.google.com/webstore/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn)
-4. **Open Claude in the side panel** — it should now respond via the native host
+4. **Open Claude in the side panel** — it should now connect via Claude Code
 
-### Need More Help?
+### More Help
 
-See [`docs/linux-setup.md`](docs/linux-setup.md) for:
-- Distro-specific setup (Ubuntu, Fedora, Arch)
-- How to verify the installation
-- Troubleshooting guide
-- Getting a Claude API key
+See [`docs/linux-setup.md`](docs/linux-setup.md) for detailed instructions and troubleshooting.
 
 ---
 
@@ -79,7 +93,6 @@ See [`docs/linux-setup.md`](docs/linux-setup.md) for:
 - **Interactive Setup** - Select which browsers to configure
 - **JSON Configuration** - Easy to extend with new browsers
 - **Test Suite** - Automated tests for reliability
-- **Linux Direct API Mode** - Works without Claude Desktop on Linux
 
 ## The Problem
 
@@ -111,7 +124,8 @@ graph LR
 
 This tool automatically configures Native Messaging Host for your Chromium browser, enabling:
 
-- Full Claude Desktop integration
+- Full Claude Desktop integration (macOS/Windows)
+- Full Claude Code integration (all platforms)
 - Claude Code browser automation (`/chrome`)
 - Side panel functionality
 - All Claude in Chrome features
@@ -173,9 +187,15 @@ Your browser not listed? The script supports [custom paths](#custom-browser-path
 
 Before running the setup:
 
-1. **Claude Desktop** installed ([Download here](https://claude.ai/download))
-2. **Claude in Chrome extension** installed in your browser ([Chrome Web Store](https://chrome.google.com/webstore/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn))
-3. **Bash 4.0+** (macOS users may need to install via Homebrew: `brew install bash`)
+| Platform | Requirements |
+|----------|-------------|
+| **macOS** | [Claude Desktop](https://claude.ai/download) installed |
+| **Windows** | [Claude Desktop](https://claude.ai/download) installed |
+| **Linux** | [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed |
+
+All platforms also need:
+- **Claude in Chrome extension** installed in your browser ([Chrome Web Store](https://chrome.google.com/webstore/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn))
+- **Bash 4.0+** (macOS users may need to install via Homebrew: `brew install bash`)
 
 ## Installation
 
@@ -286,7 +306,9 @@ After running the setup:
 
 ## How It Works
 
-Chrome extensions communicate with native applications through the [Native Messaging API](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging). This requires JSON manifest files that tell the browser where to find Claude's native host binary.
+Chrome extensions communicate with native applications through the [Native Messaging API](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging). This requires JSON manifest files that tell the browser where to find the native host binary.
+
+### macOS / Windows
 
 ```mermaid
 graph TB
@@ -313,7 +335,38 @@ graph TB
     style CC fill:#e8daef,stroke:#8e44ad,color:#000
 ```
 
-The script creates these manifests in your browser's data directory:
+### Linux
+
+On Linux, **Claude Code CLI** provides the native messaging host. Claude Desktop is not available for Linux.
+
+```mermaid
+graph TB
+    subgraph BROWSER ["Your Browser (Brave, Vivaldi, etc.)"]
+        EXT["Claude Extension"]
+    end
+
+    EXT <-->|"Native Messaging API"| MANIFEST
+
+    MANIFEST["NativeMessagingHosts/\ncom.anthropic.claude_code_browser_extension.json"]
+
+    MANIFEST -->|"points to"| HOST["~/.claude/chrome/chrome-native-host\n(installed by Claude Code CLI)"]
+
+    HOST <--> CC["Claude Code"]
+
+    SETUP["install-linux.sh / setup.sh"] -.->|"creates"| MANIFEST
+
+    style BROWSER fill:#f0f4ff,stroke:#4a90d9,color:#000
+    style SETUP fill:#fff3cd,stroke:#ffc107,color:#000
+    style MANIFEST fill:#e8f5e9,stroke:#4caf50,color:#000
+    style HOST fill:#fce4ec,stroke:#e91e63,color:#000
+    style CC fill:#e8daef,stroke:#8e44ad,color:#000
+```
+
+Claude Code automatically registers its native host for Google Chrome and Microsoft Edge. This tool extends that registration to additional Chromium browsers.
+
+### Manifest Locations
+
+The script creates manifests in your browser's data directory:
 
 **macOS:**
 ```
@@ -334,15 +387,18 @@ The script creates these manifests in your browser's data directory:
 
 ```
 claude-chromium-native-messaging/
-├── setup.sh              # macOS/Linux setup script
+├── setup.sh              # macOS/Linux interactive setup script
 ├── setup.ps1             # Windows setup script
+├── install-linux.sh      # Linux quick installer (extends Claude Code)
+├── uninstall-linux.sh    # Linux uninstaller
 ├── config/
 │   └── browsers.json     # Browser configuration (shared)
 ├── tests/
 │   ├── test_setup.sh     # Bash test suite
 │   └── test_setup.ps1    # PowerShell test suite
 ├── docs/
-│   └── manual-setup.md   # Manual setup guide
+│   ├── manual-setup.md   # Manual setup guide
+│   └── linux-setup.md    # Linux-specific guide
 ├── CHANGELOG.md          # Version history
 ├── CONTRIBUTING.md       # Contribution guidelines
 ├── VERSION               # Current version
@@ -365,6 +421,17 @@ This is a known limitation. Claude Code looks for Google Chrome processes specif
 2. Then run `/chrome` in Claude Code
 
 See [Issue #14370](https://github.com/anthropics/claude-code/issues/14370) for updates.
+
+**Linux: Native host not found**
+
+Make sure Claude Code CLI is installed and has been run at least once:
+```bash
+npm install -g @anthropic-ai/claude-code
+claude
+# Then use /chrome inside Claude Code
+```
+
+The native host should appear at `~/.claude/chrome/chrome-native-host`.
 
 **Bash version error on macOS**
 
@@ -441,6 +508,18 @@ If auto-detection doesn't find it, specify the path manually:
 
 > **Note:** On Linux, Chrome Canary and Chrome Dev share the same data directory (`google-chrome-unstable`) because they both use the `google-chrome-unstable` package. The setup script will configure the directory once for whichever is detected first.
 
+### How does Linux support work?
+
+On Linux, **Claude Code CLI** provides the native messaging host — Claude Desktop is not available for Linux.
+
+When you install Claude Code and run it, it creates a native host at `~/.claude/chrome/chrome-native-host` and registers it for Google Chrome and Microsoft Edge. This tool extends that registration to additional Chromium browsers (Brave, Vivaldi, Opera, etc.).
+
+**Requirements:**
+- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) — `npm install -g @anthropic-ai/claude-code`
+- Run `claude` at least once, then use `/chrome` to initialize the native host
+
+See [`docs/linux-setup.md`](docs/linux-setup.md) for detailed instructions.
+
 ### How do I use a custom browser location?
 
 Use the `--path` flag (Bash) or `-Path` parameter (PowerShell) to point the script at your browser's data directory:
@@ -465,6 +544,11 @@ To find the correct path, open your browser and navigate to `chrome://version` �
 **macOS / Linux:**
 ```bash
 ./setup.sh --uninstall
+```
+
+**Linux (quick uninstall):**
+```bash
+./uninstall-linux.sh
 ```
 
 **Windows:**
@@ -495,8 +579,8 @@ Areas where help is needed:
 
 ## Related Resources
 
-- [Claude Desktop](https://claude.ai/download) - Official Claude desktop app
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) - CLI tool for agentic coding
+- [Claude Desktop](https://claude.ai/download) - Official Claude desktop app (macOS/Windows)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) - CLI tool for agentic coding (all platforms)
 - [Chrome Native Messaging](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging) - Chrome documentation
 
 ### Related GitHub Issues
@@ -520,4 +604,4 @@ This is an **unofficial workaround**. The official Claude in Chrome extension is
   <a href="https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues">Request Feature</a>
 </p>
 
-<!-- Keywords for SEO: claude ai, anthropic, claude browser extension, brave browser claude, arc browser claude, vivaldi claude, edge claude, chromium claude, native messaging host, claude desktop, claude code, browser automation, ai assistant, llm, windows, powershell -->
+<!-- Keywords for SEO: claude ai, anthropic, claude browser extension, brave browser claude, arc browser claude, vivaldi claude, edge claude, chromium claude, native messaging host, claude desktop, claude code, browser automation, ai assistant, llm, windows, powershell, linux -->
