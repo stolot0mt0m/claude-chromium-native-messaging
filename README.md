@@ -387,23 +387,27 @@ The script creates manifests in your browser's data directory:
 
 ```
 claude-chromium-native-messaging/
-├── setup.sh              # macOS/Linux interactive setup script
-├── setup.ps1             # Windows setup script
-├── install-linux.sh      # Linux quick installer (extends Claude Code)
-├── uninstall-linux.sh    # Linux uninstaller
+├── setup.sh                        # macOS/Linux interactive setup
+├── setup.ps1                       # Windows setup
+├── install-linux.sh                # Linux quick installer (extends Claude Code)
+├── uninstall-linux.sh              # Linux uninstaller
 ├── config/
-│   └── browsers.json     # Browser configuration (shared)
+│   └── browsers.json               # Browser paths & extension IDs
 ├── tests/
-│   ├── test_setup.sh     # Bash test suite
-│   └── test_setup.ps1    # PowerShell test suite
+│   ├── test_setup.sh               # Bash test suite (52 tests)
+│   ├── test_browser_detection.sh   # Browser detection tests (76 tests)
+│   ├── test_setup.ps1              # PowerShell tests
+│   ├── setup.Tests.ps1             # Pester tests (Windows)
+│   └── fixtures/                   # Test data files
 ├── docs/
-│   ├── manual-setup.md   # Manual setup guide
-│   └── linux-setup.md    # Linux-specific guide
-├── CHANGELOG.md          # Version history
-├── CONTRIBUTING.md       # Contribution guidelines
-├── VERSION               # Current version
-├── LICENSE               # MIT License
-└── README.md             # This file
+│   ├── manual-setup.md             # Manual setup guide
+│   └── linux-setup.md              # Linux-specific guide
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── TESTING.md                      # Test suite documentation
+├── VERSION
+├── LICENSE
+└── README.md
 ```
 
 ## Troubleshooting
