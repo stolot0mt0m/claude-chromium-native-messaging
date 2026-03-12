@@ -195,24 +195,38 @@ build_project() {
 # Host Binary Deployment
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Copies dist/host.js to HOST_INSTALL_DIR/host (idempotent)
+# Copies all dist/*.js files to HOST_INSTALL_DIR/ and sets host as executable (idempotent)
 deploy_host() {
-    local host_src="${SCRIPT_DIR}/dist/host.js"
+    local dist_dir="${SCRIPT_DIR}/dist"
+    local host_src="${dist_dir}/host.js"
     local host_dst="${HOST_INSTALL_DIR}/host"
 
     step "Deploying host binary to ${HOST_INSTALL_DIR}/..."
 
     mkdir -p "${HOST_INSTALL_DIR}"
 
-    # Skip if already identical
-    if [[ -f "$host_dst" ]] && diff -q "$host_src" "$host_dst" &>/dev/null; then
-        ok "Host binary already up-to-date"
-        return
-    fi
+    # Copy all JS module files that host.js requires
+    local changed=0
+    for js_file in "${dist_dir}"/*.js; do
+        local dest="${HOST_INSTALL_DIR}/$(basename "$js_file")"
+        if [[ ! -f "$dest" ]] || ! diff -q "$js_file" "$dest" &>/dev/null; then
+            cp "$js_file" "$dest"
+            changed=1
+        fi
+    done
 
-    cp "$host_src" "$host_dst"
+    # The manifest points to HOST_INSTALL_DIR/host (no extension, executable)
+    if [[ ! -f "$host_dst" ]] || ! diff -q "$host_src" "$host_dst" &>/dev/null; then
+        cp "$host_src" "$host_dst"
+        changed=1
+    fi
     chmod 755 "$host_dst"
-    ok "Deployed: ${host_dst}"
+
+    if [[ $changed -eq 0 ]]; then
+        ok "Host binary already up-to-date"
+    else
+        ok "Deployed: ${host_dst} (+ module files)"
+    fi
 }
 
 # ═══════════════════════════════════════════════════════════════════════════

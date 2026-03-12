@@ -127,11 +127,17 @@ remove_system_manifests() {
     fi
 }
 
-# Removes the host binary and its install directory (if empty afterwards)
+# Removes the host binary, all module JS files, and the install directory
 remove_host_binary() {
-    step "Removing host binary..."
-    remove_file "${HOST_INSTALL_DIR}/host"
-    remove_dir_if_empty "${HOST_INSTALL_DIR}"
+    step "Removing host binary and module files..."
+    if [[ -d "${HOST_INSTALL_DIR}" ]]; then
+        for f in "${HOST_INSTALL_DIR}"/*.js "${HOST_INSTALL_DIR}/host"; do
+            remove_file "$f"
+        done
+        remove_dir_if_empty "${HOST_INSTALL_DIR}"
+    else
+        info "Host directory not found (skipping): ${HOST_INSTALL_DIR}"
+    fi
 }
 
 # Prompts the user before removing the config file (contains API key)
