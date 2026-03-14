@@ -440,7 +440,7 @@ claude-chromium-native-messaging/
 
 **Claude Code `/chrome` doesn't work with non-Chrome browsers**
 
-This is a known limitation with a deeper cause than just process detection. Our [reverse-engineering analysis](https://github.com/anthropics/claude-code/issues/34364) found that Claude Code's `/chrome` MCP integration communicates through a **remote WebSocket bridge** (`wss://bridge.claudeusercontent.com`), not through local sockets. The Chrome extension connects to this bridge, Claude Code's MCP server connects to the same bridge, and they are matched by user account.
+This is a known limitation with a deeper cause than just process detection. Our [technical analysis](https://github.com/anthropics/claude-code/issues/34364) found that Claude Code's `/chrome` MCP integration communicates through a **remote WebSocket bridge** (`wss://bridge.claudeusercontent.com`), not through local sockets. The Chrome extension connects to this bridge, Claude Code's MCP server connects to the same bridge, and they are matched by user account.
 
 The problem: the extension checks a server-side feature flag (`chrome_ext_bridge_enabled`) before connecting to the bridge. This flag currently returns `false` for non-Chrome browsers, which means the extension never opens the bridge WebSocket — so Claude Code's MCP server can't find it.
 
@@ -613,7 +613,7 @@ Areas where help is needed:
 
 ### Related GitHub Issues
 
-- [**#34364**](https://github.com/anthropics/claude-code/issues/34364) - **Bridge feature flag blocks non-Chrome browsers** (our reverse-engineering analysis)
+- [**#34364**](https://github.com/anthropics/claude-code/issues/34364) - **Bridge feature flag blocks non-Chrome browsers** (our technical analysis)
 - [#18075](https://github.com/anthropics/claude-code/issues/18075) - Add `CLAUDE_CODE_CHROME_PATH` env var
 - [#14536](https://github.com/anthropics/claude-code/issues/14536) - Browser selection option
 - [#14370](https://github.com/anthropics/claude-code/issues/14370) - Detect extension in Chromium browsers
