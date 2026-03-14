@@ -438,13 +438,17 @@ claude-chromium-native-messaging/
 2. Check Activity Monitor / Task Manager for remaining browser processes
 3. Verify the extension ID is `fcoeoabgfenejglbffodgkkbkcdhcgfn`
 
-**Claude Code `/chrome` doesn't detect browser**
+**Claude Code `/chrome` doesn't work with non-Chrome browsers**
 
-This is a known limitation. Claude Code looks for Google Chrome processes specifically. Workaround:
-1. Open your Chromium browser manually first
-2. Then run `/chrome` in Claude Code
+This is a known limitation with a deeper cause than just process detection. Our [reverse-engineering analysis](https://github.com/anthropics/claude-code/issues/34364) found that Claude Code's `/chrome` MCP integration communicates through a **remote WebSocket bridge** (`wss://bridge.claudeusercontent.com`), not through local sockets. The Chrome extension connects to this bridge, Claude Code's MCP server connects to the same bridge, and they are matched by user account.
 
-See [Issue #14370](https://github.com/anthropics/claude-code/issues/14370) for updates.
+The problem: the extension checks a server-side feature flag (`chrome_ext_bridge_enabled`) before connecting to the bridge. This flag currently returns `false` for non-Chrome browsers, which means the extension never opens the bridge WebSocket — so Claude Code's MCP server can't find it.
+
+**What this tool fixes:** Native messaging manifests (extension ↔ native host communication). This enables the side panel, extension login, and Claude Desktop integration.
+
+**What this tool cannot fix:** The `/chrome` MCP integration (browser automation via Claude Code). This requires Anthropic to unlock the bridge feature flag for non-Chrome browsers.
+
+See [Issue #34364](https://github.com/anthropics/claude-code/issues/34364) for the full technical analysis and [Issue #18075](https://github.com/anthropics/claude-code/issues/18075) for the feature request.
 
 **Linux: Native host not found**
 
@@ -609,9 +613,10 @@ Areas where help is needed:
 
 ### Related GitHub Issues
 
-- [#14370](https://github.com/anthropics/claude-code/issues/14370) - Detect extension in Chromium browsers
+- [**#34364**](https://github.com/anthropics/claude-code/issues/34364) - **Bridge feature flag blocks non-Chrome browsers** (our reverse-engineering analysis)
 - [#18075](https://github.com/anthropics/claude-code/issues/18075) - Add `CLAUDE_CODE_CHROME_PATH` env var
 - [#14536](https://github.com/anthropics/claude-code/issues/14536) - Browser selection option
+- [#14370](https://github.com/anthropics/claude-code/issues/14370) - Detect extension in Chromium browsers
 
 ## License
 
