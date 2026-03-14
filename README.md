@@ -163,7 +163,7 @@ These browsers have been tested and confirmed working by users or maintainers:
 | **Chromium** | Chromium | ✅ | ✅ | ✅ | Base project |
 | **Microsoft Edge** | Chromium | ✅ | ✅ | ✅ | |
 | **Brave** | Chromium | ✅ | ✅ | ✅ | |
-| **Arc** | Chromium | ✅ | — | ✅ | [#11](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/11) |
+| **Arc** | Chromium | ✅* | — | ✅* | No side panel ([details](#arc-browser-limitations)) |
 | **Opera / Opera GX** | Chromium | ✅ | ✅ | ✅ | |
 | **Helium** | Chromium | ✅ | ✅ | ✅ | [#2](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/2) |
 | **Genspark** | Chromium | ✅ | — | ✅ | Confirmed by maintainer |
@@ -431,6 +431,22 @@ claude-chromium-native-messaging/
 ```
 
 ## Troubleshooting
+
+**Arc Browser Limitations**
+
+Arc does not implement Chrome's `chrome.sidePanel` API. This means:
+
+- Clicking the Claude extension icon in Arc's toolbar **does nothing** — the side panel won't open
+- The extension can only be opened manually as a full tab: navigate to `chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/sidepanel.html`
+- In tab mode, the extension **cannot orchestrate other tabs** (no page reading, no browser automation, no screenshots of adjacent tabs) because the tab group context that Chrome's side panel provides is missing
+- Native messaging and Claude Desktop integration work normally
+
+**What works in Arc:** Claude as a chat interface (ask questions, generate code, all AI features).
+**What doesn't work in Arc:** Side panel integration, browser automation, tab orchestration.
+
+> **Tip:** You can pin the extension URL as a sidebar entry in Arc for quick access, or use Arc's Split View to have the chat next to a webpage — but there is no cross-tab interaction.
+
+---
 
 **Extension not connecting after restart**
 
