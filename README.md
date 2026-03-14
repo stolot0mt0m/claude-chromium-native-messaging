@@ -7,7 +7,7 @@
 [![macOS](https://img.shields.io/badge/macOS-supported-brightgreen.svg)](https://www.apple.com/macos/)
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg)](https://www.linux.org/)
 [![Windows](https://img.shields.io/badge/Windows-supported-brightgreen.svg)](https://www.microsoft.com/windows)
-[![Browsers](https://img.shields.io/badge/browsers-31%2B_supported-blue.svg)](#supported-browsers)
+[![Browsers](https://img.shields.io/badge/browsers-27%2B_supported-blue.svg)](#supported-browsers)
 
 > **Use Claude AI browser extension with Brave, Arc, Vivaldi, Edge, Opera, Genspark, Helium, and other Chromium-based browsers**
 
@@ -87,7 +87,7 @@ See [`docs/linux-setup.md`](docs/linux-setup.md) for detailed instructions and t
 
 ## Features
 
-- **31+ Supported Browsers** - Brave, Arc, Vivaldi, Edge, Opera, and more
+- **27+ Supported Browsers** - Brave, Arc, Vivaldi, Edge, Opera, and more
 - **Cross-Platform** - Works on macOS, Linux, and Windows
 - **Safe by Default** - Dry-run mode, backup support, and path validation
 - **Interactive Setup** - Select which browsers to configure
@@ -110,13 +110,15 @@ graph LR
     EXT -.-x BRAVE["Brave ❌"]
     EXT -.-x ARC["Arc ❌"]
     EXT -.-x EDGE["Edge ❌"]
-    EXT -.-x MORE["30+ more ❌"]
+    EXT -.-x MORE["25+ more ❌"]
+    EXT -.-x INCOMPAT["Orion, Falkon, Colibri ❌"]
 
     style CHROME fill:#d4edda,stroke:#28a745,color:#000
     style BRAVE fill:#f8d7da,stroke:#dc3545,color:#000
     style ARC fill:#f8d7da,stroke:#dc3545,color:#000
     style EDGE fill:#f8d7da,stroke:#dc3545,color:#000
     style MORE fill:#f8d7da,stroke:#dc3545,color:#000
+    style INCOMPAT fill:#e2e3e5,stroke:#6c757d,color:#000
     style EXT fill:#e8daef,stroke:#8e44ad,color:#000
 ```
 
@@ -133,55 +135,73 @@ This tool automatically configures Native Messaging Host for your Chromium brows
 ```mermaid
 graph LR
     EXT["Claude Extension"] -->|"Native Messaging"| CHROME["Chrome ✅"]
-    EXT -->|"Manifest created"| BRAVE["Brave ✅"]
-    EXT -->|"Manifest created"| ARC["Arc ✅"]
-    EXT -->|"Manifest created"| EDGE["Edge ✅"]
-    EXT -->|"Manifest created"| MORE["31+ browsers ✅"]
+    EXT -->|"Manifest created"| CONFIRMED["Brave, Arc, Edge, Genspark, Helium, Opera ✅"]
+    EXT -->|"Manifest created"| UNCONFIRMED["15+ more Chromium browsers ⬜"]
+    EXT -.-x INCOMPAT["Orion, Falkon, Colibri ❌"]
 
     style CHROME fill:#d4edda,stroke:#28a745,color:#000
-    style BRAVE fill:#d4edda,stroke:#28a745,color:#000
-    style ARC fill:#d4edda,stroke:#28a745,color:#000
-    style EDGE fill:#d4edda,stroke:#28a745,color:#000
-    style MORE fill:#d4edda,stroke:#28a745,color:#000
+    style CONFIRMED fill:#d4edda,stroke:#28a745,color:#000
+    style UNCONFIRMED fill:#fff3cd,stroke:#ffc107,color:#000
+    style INCOMPAT fill:#f8d7da,stroke:#dc3545,color:#000
     style EXT fill:#e8daef,stroke:#8e44ad,color:#000
 ```
 
 ## Supported Browsers
 
-| Browser | macOS | Linux | Windows |
-|---------|:-----:|:-----:|:-------:|
-| **Brave** | ✅ | ✅ | ✅ |
-| **Arc** | ✅ | — | ✅ |
-| **Vivaldi** | ✅ | ✅ | ✅ |
-| **Microsoft Edge** | ✅ | ✅ | ✅ |
-| **Google Chrome** | ✅ | ✅ | ✅ |
-| **Google Chrome Canary** | ✅ | ✅ | ✅ |
-| **Google Chrome Beta** | ✅ | ✅ | ✅ |
-| **Google Chrome Dev** | ✅ | ✅ | ✅ |
-| **Opera / Opera GX** | ✅ | ✅ | ✅ |
-| **Chromium** | ✅ | ✅ | ✅ |
-| **Ungoogled Chromium** | ✅ | ✅ | ✅ |
-| **Yandex Browser** | ✅ | ✅ | ✅ |
-| **Naver Whale** | ✅ | ✅ | ✅ |
-| **Coc Coc** | ✅ | ✅ | ✅ |
-| **Comodo Dragon** | ✅ | ✅ | ✅ |
-| **Avast Secure Browser** | ✅ | ✅ | ✅ |
-| **AVG Secure Browser** | ✅ | ✅ | ✅ |
-| **Epic Privacy Browser** | ✅ | ✅ | ✅ |
-| **SRWare Iron** | ✅ | ✅ | ✅ |
-| **Torch** | ✅ | ✅ | ✅ |
-| **Slimjet** | ✅ | ✅ | ✅ |
-| **Cent Browser** | ✅ | ✅ | ✅ |
-| **Maxthon** | ✅ | ✅ | ✅ |
-| **Iridium** | ✅ | ✅ | ✅ |
-| **Sidekick** | ✅ | ✅ | ✅ |
-| **Genspark** | ✅ | ✅ | ✅ |
-| **Helium** | ✅ | ✅ | ✅ |
-| **Orion** | ✅ | ✅ | — |
-| **Falkon** | ✅ | ✅ | — |
-| **Colibri** | ✅ | ✅ | — |
+All browsers listed below are **Chromium-based** and support the Chrome Extensions API including Native Messaging. The setup script auto-detects installed browsers and configures the necessary manifest files.
 
-Your browser not listed? The script supports [custom paths](#custom-browser-paths) — any Chromium-based browser should work.
+### Confirmed Working
+
+These browsers have been tested and confirmed working by users or maintainers:
+
+| Browser | Engine | macOS | Linux | Windows | Notes |
+|---------|--------|:-----:|:-----:|:-------:|-------|
+| **Google Chrome** | Chromium | ✅ | ✅ | ✅ | Official target |
+| **Google Chrome Canary** | Chromium | ✅ | ✅ | ✅ | Dev channel ([#3](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/3)) |
+| **Google Chrome Beta** | Chromium | ✅ | ✅ | ✅ | |
+| **Google Chrome Dev** | Chromium | ✅ | ✅ | ✅ | |
+| **Chromium** | Chromium | ✅ | ✅ | ✅ | Base project |
+| **Microsoft Edge** | Chromium | ✅ | ✅ | ✅ | |
+| **Brave** | Chromium | ✅ | ✅ | ✅ | |
+| **Arc** | Chromium | ✅ | — | ✅ | [#11](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/11) |
+| **Opera / Opera GX** | Chromium | ✅ | ✅ | ✅ | |
+| **Helium** | Chromium | ✅ | ✅ | ✅ | [#2](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/2) |
+| **Genspark** | Chromium | ✅ | — | ✅ | Confirmed by maintainer |
+
+### Should Work (Chromium-based, not yet confirmed)
+
+These are genuine Chromium/Blink-based browsers with full Chrome extension support. They **should work** based on their architecture, but haven't been explicitly confirmed by users yet. If you use any of these browsers, please [open an issue](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/new) to let us know if it works!
+
+| Browser | Engine | macOS | Linux | Windows |
+|---------|--------|:-----:|:-----:|:-------:|
+| **Vivaldi** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Ungoogled Chromium** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Yandex Browser** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Naver Whale** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Coc Coc** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Comodo Dragon** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Avast Secure Browser** | Chromium | ⬜ | ⬜ | ⬜ |
+| **AVG Secure Browser** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Epic Privacy Browser** | Chromium | ⬜ | ⬜ | ⬜ |
+| **SRWare Iron** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Slimjet** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Cent Browser** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Maxthon** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Iridium** | Chromium | ⬜ | ⬜ | ⬜ |
+| **Sidekick** | Chromium | ⬜ | ⬜ | ⬜ |
+
+> **Help us verify!** If you successfully use this tool with any of the browsers above, please [report it](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/new?title=Browser+confirmed+working:+BROWSER_NAME&body=Browser:%20%0AOS:%20%0AVersion:%20%0A%0ASetup%20completed%20successfully%20and%20Claude%20extension%20connects%20via%20native%20messaging.) so we can move it to the confirmed list.
+
+### Not Compatible
+
+| Browser | Engine | Why |
+|---------|--------|-----|
+| **Orion** (Kagi) | WebKit | Not Chromium-based. Supports Chrome extensions via compatibility layer, but Native Messaging / Chrome DevTools API is not fully implemented. Confirmed non-functional in [#10](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/10). |
+| **Falkon** (KDE) | QtWebEngine | Uses Chromium internally via Qt, but does **not** support Chrome extensions or WebExtensions. Has its own limited extension API. |
+| **Colibri** | Electron/Chromium | Chromium-based but does **not** support browser extensions at all. |
+| **Torch** | Chromium | Was Chromium-based with Chrome extension support, but **discontinued** since November 2022. No longer available for download. |
+
+Your browser not listed? The script supports [custom paths](#custom-browser-paths) — any Chromium-based browser with Chrome extension support should work.
 
 ## Prerequisites
 
