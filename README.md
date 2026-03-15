@@ -163,7 +163,7 @@ These browsers have been tested and confirmed working by users or maintainers:
 | **Chromium** | Chromium | ✅ | ✅ | ✅ | Base project |
 | **Microsoft Edge** | Chromium | ✅ | ✅ | ✅ | |
 | **Brave** | Chromium | ✅ | ✅ | ✅ | |
-| **Arc** | Chromium | ✅* | — | ✅* | No side panel ([details](#arc-browser-limitations)) |
+| **Arc** | Chromium | ✅* | — | ✅* | No side panel ([details](#arc-browser-limitations)) Modified version of the extension working in Arc [(link here)](https://github.com/Dylanyz/claude-arc-patch)|
 | **Opera / Opera GX** | Chromium | ✅ | ✅ | ✅ | |
 | **Helium** | Chromium | ✅ | ✅ | ✅ | [#2](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/2) |
 | **Genspark** | Chromium | ✅ | — | ✅ | Confirmed by maintainer |
