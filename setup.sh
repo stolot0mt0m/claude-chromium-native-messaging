@@ -682,8 +682,32 @@ verify_installation() {
         return 0
     fi
 
-    if [[ -f "$nmh_dir/com.anthropic.claude_browser_extension.json" ]]; then
+    local desktop_manifest="$nmh_dir/com.anthropic.claude_browser_extension.json"
+    if [[ -f "$desktop_manifest" ]]; then
         print_success "Claude Desktop manifest exists"
+
+        # Verify the native host binary referenced in the manifest is executable
+        local host_path=""
+        if command -v jq &>/dev/null; then
+            host_path=$(jq -r '.path // empty' "$desktop_manifest" 2>/dev/null)
+        else
+            host_path=$(grep '"path"' "$desktop_manifest" 2>/dev/null | \
+                sed 's/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+        fi
+
+        if [[ -n "$host_path" ]]; then
+            if [[ -x "$host_path" ]]; then
+                print_verbose "Native host binary OK: $host_path"
+            elif [[ -f "$host_path" ]]; then
+                print_warning "Native host binary exists but is not executable: $host_path"
+                print_info "Fix with: chmod +x \"$host_path\""
+                success=false
+            else
+                print_error "Native host binary not found: $host_path"
+                print_info "Reinstall Claude Desktop to restore the binary"
+                success=false
+            fi
+        fi
     else
         print_error "Claude Desktop manifest missing"
         success=false
@@ -696,6 +720,22 @@ verify_installation() {
     fi
 
     $success
+}
+
+print_vivaldi_sidepanel_notice() {
+    echo ""
+    print_warning "Vivaldi note: Some users see a blank side panel after setup."
+    echo "  If the sidebar opens but shows nothing, try these steps:"
+    echo "  1. Fully quit Vivaldi and restart it"
+    echo "  2. Go to vivaldi://settings/privacy and temporarily set"
+    echo "     'Tracker and Ad Blocking' to 'No Blocking', then reload"
+    echo "  3. Go to vivaldi://extensions → Claude → ensure all"
+    echo "     permissions (especially 'Side Panel') are granted"
+    echo "  4. Try opening the panel directly in a tab:"
+    echo "     chrome-extension://$CLAUDE_OFFICIAL_EXTENSION_ID/sidepanel.html"
+    echo "  5. If using a non-Default profile, switch to the profile"
+    echo "     where the Claude extension is installed"
+    echo ""
 }
 
 # =============================================================================
@@ -999,6 +1039,9 @@ main() {
 
             if [[ $result -ne 1 ]]; then
                 verify_installation "$path"
+                if [[ "$name" == "Vivaldi" ]]; then
+                    print_vivaldi_sidepanel_notice
+                fi
             fi
         fi
         echo ""
