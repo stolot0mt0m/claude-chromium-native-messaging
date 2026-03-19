@@ -459,21 +459,22 @@ Arc does not implement Chrome's `chrome.sidePanel` API. This means:
 
 **Vivaldi Blank Side Panel**
 
-Native messaging installs correctly in Vivaldi on macOS, but the side panel may open blank. The native messaging manifest is placed and the extension loads — the panel just fails to render its content. Likely causes are Vivaldi's built-in tracker/ad blocking interfering with the extension's startup requests, or a difference in Vivaldi's `chrome.sidePanel` implementation.
+Native messaging installs correctly in Vivaldi on macOS, but clicking the Claude extension icon opens a blank side panel. This is a Vivaldi-specific bug — Vivaldi's `chrome.sidePanel` API implementation does not render extension content. The extension itself is fully functional; it just can't render through Vivaldi's native side panel mechanism.
 
-**Workarounds to try (in order):**
+**Confirmed workaround: use Vivaldi's Web Panel**
 
-1. **Fully restart Vivaldi** — close all windows and quit from the menu, then relaunch
-2. **Disable Vivaldi's shields** — go to `vivaldi://settings/privacy` and set *Tracker and Ad Blocking* to *No Blocking*, then reload the panel
-3. **Check extension permissions** — go to `vivaldi://extensions` → Claude → ensure *Side Panel* permission is granted
-4. **Open the panel as a tab** — navigate directly to:
+1. Navigate to the extension URL in a regular tab:
    ```
    chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/sidepanel.html
    ```
-5. **Profile mismatch** — if you use multiple Vivaldi profiles, make sure the Claude extension is installed in the active profile (check `vivaldi://extensions`)
-6. **Re-run setup** — run `./setup.sh` again after Vivaldi has been fully restarted
+2. Accept the beta disclaimer
+3. Copy the URL from the address bar
+4. In Vivaldi's left sidebar, click **+** (Add Web Panel) and paste the URL
+5. Claude now lives permanently in Vivaldi's sidebar as a Web Panel
 
-> **What works in Vivaldi:** Native messaging is configured. The side panel opens. Claude Desktop integration should function once the rendering issue is resolved.
+**What works in Vivaldi:** Full Claude interface, Claude Desktop native messaging, all AI features — via the Web Panel workaround above.
+
+**What doesn't work:** Opening Claude via the extension toolbar icon (the `chrome.sidePanel` API is broken in Vivaldi).
 
 ---
 

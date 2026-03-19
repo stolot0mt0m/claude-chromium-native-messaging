@@ -724,17 +724,15 @@ verify_installation() {
 
 print_vivaldi_sidepanel_notice() {
     echo ""
-    print_warning "Vivaldi note: Some users see a blank side panel after setup."
-    echo "  If the sidebar opens but shows nothing, try these steps:"
-    echo "  1. Fully quit Vivaldi and restart it"
-    echo "  2. Go to vivaldi://settings/privacy and temporarily set"
-    echo "     'Tracker and Ad Blocking' to 'No Blocking', then reload"
-    echo "  3. Go to vivaldi://extensions → Claude → ensure all"
-    echo "     permissions (especially 'Side Panel') are granted"
-    echo "  4. Try opening the panel directly in a tab:"
+    print_warning "Vivaldi note: clicking the Claude icon opens a blank panel."
+    echo "  This is a Vivaldi bug with the chrome.sidePanel API."
+    echo "  Use Vivaldi's Web Panel feature instead:"
+    echo ""
+    echo "  1. Open this URL in a Vivaldi tab:"
     echo "     chrome-extension://$CLAUDE_OFFICIAL_EXTENSION_ID/sidepanel.html"
-    echo "  5. If using a non-Default profile, switch to the profile"
-    echo "     where the Claude extension is installed"
+    echo "  2. Accept the beta disclaimer"
+    echo "  3. Copy the URL and click '+' in Vivaldi's left sidebar"
+    echo "     to add it as a permanent Web Panel"
     echo ""
 }
 
