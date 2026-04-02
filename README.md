@@ -178,6 +178,7 @@ These browsers work with native messaging but have known caveats:
 | Browser | Engine | macOS | Linux | Windows | Notes |
 |---------|--------|:-----:|:-----:|:-------:|-------|
 | **Vivaldi** | Chromium | ⚠️ | ⬜ | ⬜ | Blank side panel on macOS ([details](#vivaldi-blank-side-panel)) |
+| **Chromium (Snap)** | Chromium | — | ❌ | — | Snap sandbox blocks native messaging ([details](#chromium-snap-on-linux)) |
 
 ### Should Work (Chromium-based, not yet confirmed)
 
@@ -475,6 +476,22 @@ Native messaging installs correctly in Vivaldi on macOS, but clicking the Claude
 **What works in Vivaldi:** Full Claude interface, Claude Desktop native messaging, all AI features — via the Web Panel workaround above.
 
 **What doesn't work:** Opening Claude via the extension toolbar icon (the `chrome.sidePanel` API is broken in Vivaldi).
+
+---
+
+**Chromium Snap on Linux**
+
+When Chromium is installed as a Snap package (default on Ubuntu), native messaging does not work due to Snap's sandbox:
+
+1. **Wrong manifest path:** The setup script writes to `~/.config/chromium/NativeMessagingHosts/`, but Snap Chromium reads from `~/snap/chromium/common/chromium/NativeMessagingHosts/`
+2. **Isolated `/tmp`:** Snap runs Chromium with a private `/tmp` filesystem. The native messaging host socket in `/tmp/claude-mcp-browser-bridge-<user>/` is invisible to the sandboxed browser — even if the manifest path is fixed, socket communication still fails.
+
+**Workaround:** Use a non-Snap Chromium-based browser instead. Brave, Chrome, Edge, and other browsers installed via `.deb`/APT work without issues.
+
+**How to check if your Chromium is a Snap:**
+```bash
+which chromium-browser && snap list chromium 2>/dev/null && echo "Snap detected — use a different browser"
+```
 
 ---
 
