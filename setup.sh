@@ -682,8 +682,32 @@ verify_installation() {
         return 0
     fi
 
-    if [[ -f "$nmh_dir/com.anthropic.claude_browser_extension.json" ]]; then
+    local desktop_manifest="$nmh_dir/com.anthropic.claude_browser_extension.json"
+    if [[ -f "$desktop_manifest" ]]; then
         print_success "Claude Desktop manifest exists"
+
+        # Verify the native host binary referenced in the manifest is executable
+        local host_path=""
+        if command -v jq &>/dev/null; then
+            host_path=$(jq -r '.path // empty' "$desktop_manifest" 2>/dev/null)
+        else
+            host_path=$(grep '"path"' "$desktop_manifest" 2>/dev/null | \
+                sed 's/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+        fi
+
+        if [[ -n "$host_path" ]]; then
+            if [[ -x "$host_path" ]]; then
+                print_verbose "Native host binary OK: $host_path"
+            elif [[ -f "$host_path" ]]; then
+                print_warning "Native host binary exists but is not executable: $host_path"
+                print_info "Fix with: chmod +x \"$host_path\""
+                success=false
+            else
+                print_error "Native host binary not found: $host_path"
+                print_info "Reinstall Claude Desktop to restore the binary"
+                success=false
+            fi
+        fi
     else
         print_error "Claude Desktop manifest missing"
         success=false
@@ -696,6 +720,20 @@ verify_installation() {
     fi
 
     $success
+}
+
+print_vivaldi_sidepanel_notice() {
+    echo ""
+    print_warning "Vivaldi note: clicking the Claude icon opens a blank panel."
+    echo "  This is a Vivaldi bug with the chrome.sidePanel API."
+    echo "  Use Vivaldi's Web Panel feature instead:"
+    echo ""
+    echo "  1. Open this URL in a Vivaldi tab:"
+    echo "     chrome-extension://$CLAUDE_OFFICIAL_EXTENSION_ID/sidepanel.html"
+    echo "  2. Accept the beta disclaimer"
+    echo "  3. Copy the URL and click '+' in Vivaldi's left sidebar"
+    echo "     to add it as a permanent Web Panel"
+    echo ""
 }
 
 # =============================================================================
@@ -999,6 +1037,9 @@ main() {
 
             if [[ $result -ne 1 ]]; then
                 verify_installation "$path"
+                if [[ "$name" == "Vivaldi" ]]; then
+                    print_vivaldi_sidepanel_notice
+                fi
             fi
         fi
         echo ""

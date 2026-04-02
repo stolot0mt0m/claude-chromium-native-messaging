@@ -136,11 +136,13 @@ This tool automatically configures Native Messaging Host for your Chromium brows
 graph LR
     EXT["Claude Extension"] -->|"Native Messaging"| CHROME["Chrome ✅"]
     EXT -->|"Manifest created"| CONFIRMED["Brave, Arc, Edge, Genspark, Helium, Opera ✅"]
-    EXT -->|"Manifest created"| UNCONFIRMED["15+ more Chromium browsers ⬜"]
+    EXT -->|"Manifest created"| PARTIAL["Vivaldi ⚠️ (blank panel on macOS)"]
+    EXT -->|"Manifest created"| UNCONFIRMED["14+ more Chromium browsers ⬜"]
     EXT -.-x INCOMPAT["Orion, Falkon, Colibri ❌"]
 
     style CHROME fill:#d4edda,stroke:#28a745,color:#000
     style CONFIRMED fill:#d4edda,stroke:#28a745,color:#000
+    style PARTIAL fill:#fff3cd,stroke:#ffc107,color:#000
     style UNCONFIRMED fill:#fff3cd,stroke:#ffc107,color:#000
     style INCOMPAT fill:#f8d7da,stroke:#dc3545,color:#000
     style EXT fill:#e8daef,stroke:#8e44ad,color:#000
@@ -168,13 +170,20 @@ These browsers have been tested and confirmed working by users or maintainers:
 | **Helium** | Chromium | ✅ | ✅ | ✅ | [#2](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/2) |
 | **Genspark** | Chromium | ✅ | — | ✅ | Confirmed by maintainer |
 
+### Known Issues
+
+These browsers work with native messaging but have known caveats:
+
+| Browser | Engine | macOS | Linux | Windows | Notes |
+|---------|--------|:-----:|:-----:|:-------:|-------|
+| **Vivaldi** | Chromium | ⚠️ | ⬜ | ⬜ | Blank side panel on macOS ([details](#vivaldi-blank-side-panel)) |
+
 ### Should Work (Chromium-based, not yet confirmed)
 
 These are genuine Chromium/Blink-based browsers with full Chrome extension support. They **should work** based on their architecture, but haven't been explicitly confirmed by users yet. If you use any of these browsers, please [open an issue](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/new) to let us know if it works!
 
 | Browser | Engine | macOS | Linux | Windows |
 |---------|--------|:-----:|:-----:|:-------:|
-| **Vivaldi** | Chromium | ⬜ | ⬜ | ⬜ |
 | **Ungoogled Chromium** | Chromium | ⬜ | ⬜ | ⬜ |
 | **Yandex Browser** | Chromium | ⬜ | ⬜ | ⬜ |
 | **Naver Whale** | Chromium | ⬜ | ⬜ | ⬜ |
@@ -445,6 +454,27 @@ Arc does not implement Chrome's `chrome.sidePanel` API. This means:
 **What doesn't work in Arc:** Side panel integration, browser automation, tab orchestration.
 
 > **Tip:** You can pin the extension URL as a sidebar entry in Arc for quick access, or use Arc's Split View to have the chat next to a webpage — but there is no cross-tab interaction.
+
+---
+
+**Vivaldi Blank Side Panel**
+
+Native messaging installs correctly in Vivaldi on macOS, but clicking the Claude extension icon opens a blank side panel. This is a Vivaldi-specific bug — Vivaldi's `chrome.sidePanel` API implementation does not render extension content. The extension itself is fully functional; it just can't render through Vivaldi's native side panel mechanism.
+
+**Confirmed workaround: use Vivaldi's Web Panel**
+
+1. Navigate to the extension URL in a regular tab:
+   ```
+   chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/sidepanel.html
+   ```
+2. Accept the beta disclaimer
+3. Copy the URL from the address bar
+4. In Vivaldi's left sidebar, click **+** (Add Web Panel) and paste the URL
+5. Claude now lives permanently in Vivaldi's sidebar as a Web Panel
+
+**What works in Vivaldi:** Full Claude interface, Claude Desktop native messaging, all AI features — via the Web Panel workaround above.
+
+**What doesn't work:** Opening Claude via the extension toolbar icon (the `chrome.sidePanel` API is broken in Vivaldi).
 
 ---
 
