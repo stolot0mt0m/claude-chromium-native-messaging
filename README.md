@@ -137,7 +137,7 @@ graph LR
     EXT["Claude Extension"] -->|"Native Messaging"| CHROME["Chrome ✅"]
     EXT -->|"Manifest created"| CONFIRMED["Brave, Arc, Edge, Genspark, Helium, Opera ✅"]
     EXT -->|"Manifest created"| PARTIAL["Vivaldi ⚠️ (blank panel on macOS)"]
-    EXT -->|"Manifest created"| UNCONFIRMED["14+ more Chromium browsers ⬜"]
+    EXT -->|"Manifest created"| UNCONFIRMED["13+ more Chromium browsers ⬜"]
     EXT -.-x INCOMPAT["Orion, Falkon, Colibri ❌"]
 
     style CHROME fill:#d4edda,stroke:#28a745,color:#000
@@ -169,6 +169,7 @@ These browsers have been tested and confirmed working by users or maintainers:
 | **Opera / Opera GX** | Chromium | ✅ | ✅ | ✅ | |
 | **Helium** | Chromium | ✅ | ✅ | ✅ | [#2](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/2) |
 | **Genspark** | Chromium | ✅ | — | ✅ | Confirmed by maintainer |
+| **Ungoogled Chromium** | Chromium | ✅ | ⬜ | ⬜ | Via Homebrew; requires Developer Mode + manual CRX install ([#18](https://github.com/stolot0mt0m/claude-chromium-native-messaging/issues/18)) |
 
 ### Known Issues
 
@@ -184,7 +185,6 @@ These are genuine Chromium/Blink-based browsers with full Chrome extension suppo
 
 | Browser | Engine | macOS | Linux | Windows |
 |---------|--------|:-----:|:-----:|:-------:|
-| **Ungoogled Chromium** | Chromium | ⬜ | ⬜ | ⬜ |
 | **Yandex Browser** | Chromium | ⬜ | ⬜ | ⬜ |
 | **Naver Whale** | Chromium | ⬜ | ⬜ | ⬜ |
 | **Coc Coc** | Chromium | ⬜ | ⬜ | ⬜ |
