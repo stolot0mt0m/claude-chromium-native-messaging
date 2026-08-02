@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Vivaldi tab-binding patch** — fixes the `No active tab` error that made the Web Panel workaround render but never send
+  - `patch-vivaldi.sh` (macOS/Linux) and `patch-vivaldi.ps1` (Windows) build a patched, unpacked copy of the Claude extension with a wrapper service worker (`tabbind.js`) that keeps `chrome.storage.local["targetTabId"]` pointing at the active tab
+  - The wrapper `import`s the original service worker untouched, so no extension code is rewritten; `"key"` is preserved so the extension ID — and therefore the native messaging manifests written by `setup.sh` — stay valid
+  - `--check` reports version drift after the Web Store copy auto-updates; `--uninstall` removes the patched copy; `--dry-run`, `--verbose`, `--quiet`, `--source`, `--dest`, `--browser`, `--profile` supported
+  - `docs/vivaldi-tab-binding.md` — root-cause analysis, design notes, verification steps, and the upstream fix that would make the patch unnecessary
+  - `tests/test_patch_vivaldi.sh` — 55 tests covering manifest rewriting, wrapper generation, version selection, drift detection, and destination safety guards
+  - Diagnosis contributed by a user who traced it through the deminified extension bundle; re-verified against Claude extension 1.0.84
+
 ### Changed
 - **Linux: Replaced Direct API Mode with Claude Code CLI integration**
   - Linux now uses Claude Code CLI's native messaging host (`~/.claude/chrome/chrome-native-host`) instead of a custom Node.js API host
