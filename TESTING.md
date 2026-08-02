@@ -10,13 +10,16 @@ The test suite validates browser detection, path validation, config file handlin
 
 ```bash
 # Run all tests
-bash tests/test_setup.sh && bash tests/test_browser_detection.sh
+bash tests/test_setup.sh && bash tests/test_browser_detection.sh && bash tests/test_patch_vivaldi.sh
 
 # Run only the core test suite
 bash tests/test_setup.sh
 
 # Run only browser detection integration tests
 bash tests/test_browser_detection.sh
+
+# Run only the Vivaldi tab-binding patch tests
+bash tests/test_patch_vivaldi.sh
 ```
 
 ### PowerShell Tests (Windows)
@@ -66,6 +69,20 @@ Comprehensive integration tests for browser detection logic:
 | Chrome Beta/Dev | 2 | Beta and Dev channel detection |
 | Config completeness | 3 | Built-in count, JSON/built-in match, non-empty names |
 | Claude Code host path | 2 | Path return without existence check (documented issue) |
+
+### `tests/test_patch_vivaldi.sh` (55 tests)
+
+Tests for `patch-vivaldi.sh`, run against a synthetic extension fixture so no
+real browser profile is touched:
+
+| Category | What It Covers |
+|----------|----------------|
+| Script sanity | Executable bit, help contents, unknown options, mutually exclusive flags |
+| Dry run | Labelled output, writes nothing to disk |
+| Patch output | Wrapper generation, manifest rewriting (`service_worker`, `type`, `update_url`), `key` preservation, `_metadata` removal, `patch-info.json` |
+| JSON backends | Every assertion above runs once per available backend (python3 and jq) |
+| Safety guards | Refuses an already-patched source, refuses to delete a destination that is not an extension |
+| Version handling | Numeric version-folder sorting (1.0.84 > 1.0.9), `--check` up-to-date and drift detection, `--uninstall` |
 
 ### `tests/test_setup.ps1` (12 tests)
 
@@ -132,6 +149,7 @@ Tests can run in any CI environment with Bash 4.0+ and jq. No real browser insta
   run: |
     bash tests/test_setup.sh
     bash tests/test_browser_detection.sh
+    bash tests/test_patch_vivaldi.sh
 ```
 
 Tests that require `jq` will be skipped (not failed) if jq is unavailable.

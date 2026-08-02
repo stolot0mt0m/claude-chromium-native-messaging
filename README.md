@@ -93,6 +93,7 @@ See [`docs/linux-setup.md`](docs/linux-setup.md) for detailed instructions and t
 - **Interactive Setup** - Select which browsers to configure
 - **JSON Configuration** - Easy to extend with new browsers
 - **Test Suite** - Automated tests for reliability
+- **Vivaldi Tab-Binding Patch** - Fixes the `No active tab` error in browsers that ignore `chrome.sidePanel.setOptions()` ([details](#vivaldi-no-active-tab))
 
 ## The Problem
 
@@ -177,7 +178,7 @@ These browsers work with native messaging but have known caveats:
 
 | Browser | Engine | macOS | Linux | Windows | Notes |
 |---------|--------|:-----:|:-----:|:-------:|-------|
-| **Vivaldi** | Chromium | ⚠️ | ⬜ | ⬜ | Blank side panel on macOS ([details](#vivaldi-blank-side-panel)) |
+| **Vivaldi** | Chromium | ⚠️ | ⬜ | ⬜ | Blank side panel, then `No active tab` — both fixable with `patch-vivaldi.sh` ([details](#vivaldi-no-active-tab)) |
 | **Chromium (Snap)** | Chromium | — | ❌ | — | Snap sandbox blocks native messaging ([details](#chromium-snap-on-linux)) |
 
 ### Should Work (Chromium-based, not yet confirmed)
@@ -421,17 +422,21 @@ claude-chromium-native-messaging/
 ├── setup.ps1                       # Windows setup
 ├── install-linux.sh                # Linux quick installer (extends Claude Code)
 ├── uninstall-linux.sh              # Linux uninstaller
+├── patch-vivaldi.sh                # Vivaldi/Arc tab-binding patch (macOS/Linux)
+├── patch-vivaldi.ps1               # Vivaldi tab-binding patch (Windows)
 ├── config/
 │   └── browsers.json               # Browser paths & extension IDs
 ├── tests/
 │   ├── test_setup.sh               # Bash test suite (52 tests)
 │   ├── test_browser_detection.sh   # Browser detection tests (76 tests)
+│   ├── test_patch_vivaldi.sh       # Vivaldi patch tests
 │   ├── test_setup.ps1              # PowerShell tests
 │   ├── setup.Tests.ps1             # Pester tests (Windows)
 │   └── fixtures/                   # Test data files
 ├── docs/
 │   ├── manual-setup.md             # Manual setup guide
-│   └── linux-setup.md              # Linux-specific guide
+│   ├── linux-setup.md              # Linux-specific guide
+│   └── vivaldi-tab-binding.md      # "No active tab" analysis & patch design
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── TESTING.md                      # Test suite documentation
@@ -460,9 +465,9 @@ Arc does not implement Chrome's `chrome.sidePanel` API. This means:
 
 **Vivaldi Blank Side Panel**
 
-Native messaging installs correctly in Vivaldi on macOS, but clicking the Claude extension icon opens a blank side panel. This is a Vivaldi-specific bug — Vivaldi's `chrome.sidePanel` API implementation does not render extension content. The extension itself is fully functional; it just can't render through Vivaldi's native side panel mechanism.
+Native messaging installs correctly in Vivaldi, but clicking the Claude extension icon opens a blank side panel. This is a Vivaldi-specific bug — Vivaldi's `chrome.sidePanel` API implementation does not render extension content. The extension itself is fully functional; it just can't render through Vivaldi's native side panel mechanism.
 
-**Confirmed workaround: use Vivaldi's Web Panel**
+**Workaround: use Vivaldi's Web Panel**
 
 1. Navigate to the extension URL in a regular tab:
    ```
@@ -473,9 +478,56 @@ Native messaging installs correctly in Vivaldi on macOS, but clicking the Claude
 4. In Vivaldi's left sidebar, click **+** (Add Web Panel) and paste the URL
 5. Claude now lives permanently in Vivaldi's sidebar as a Web Panel
 
-**What works in Vivaldi:** Full Claude interface, Claude Desktop native messaging, all AI features — via the Web Panel workaround above.
+This makes the panel **render**, but on its own it is not enough to make it work — see the next section.
 
 **What doesn't work:** Opening Claude via the extension toolbar icon (the `chrome.sidePanel` API is broken in Vivaldi).
+
+---
+
+**Vivaldi: "No active tab"**
+
+With the Web Panel workaround above, the panel renders and logs in, but every message fails silently: the composer clears and nothing is sent. The panel console shows:
+
+```
+Uncaught (in promise) Error: No active tab
+```
+
+**Cause:** the panel resolves its target tab from exactly two places — a `?tabId=N` query parameter, or `chrome.storage.local["targetTabId"]` when opened with `?mode=window`. In Chrome the service worker injects the tab ID into the panel URL per tab via `chrome.sidePanel.setOptions()`. Vivaldi ignores `setOptions()`, and a Web Panel URL is a frozen string, so neither source is populated and the send path throws. Full analysis: [docs/vivaldi-tab-binding.md](docs/vivaldi-tab-binding.md).
+
+**Fix:** `patch-vivaldi.sh` builds a patched, unpacked copy of the extension that keeps `targetTabId` pointing at the active tab.
+
+```bash
+# macOS / Linux
+./patch-vivaldi.sh
+
+# Windows
+.\patch-vivaldi.ps1
+```
+
+The script copies the store copy of the extension to `~/claude-vivaldi-patched`, adds a wrapper service worker (`tabbind.js`) that imports the original untouched and appends the missing `chrome.tabs` listeners, and points `manifest.json` at it. The `"key"` field is preserved, so the extension ID stays `fcoeoabgfenejglbffodgkkbkcdhcgfn` and the native messaging manifests written by `setup.sh` keep working with no changes.
+
+Three steps have to be done by hand afterwards:
+
+1. `vivaldi://extensions` → **disable** (do not remove) the Web Store copy. Both copies claim the same ID, so leaving it enabled causes a duplicate-ID error. Leaving it installed but disabled keeps it auto-updating as the source for re-patching.
+2. Turn on **Developer mode** → **Load unpacked** → select `~/claude-vivaldi-patched`
+3. Add the Web Panel with this URL — **the query string is required**:
+   ```
+   chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/sidepanel.html?mode=window&sessionId=vivaldi-panel
+   ```
+
+The patched copy is a snapshot, so re-run the script when the store copy updates:
+
+```bash
+./patch-vivaldi.sh --check   # exit 0 = up to date, 1 = stale
+./patch-vivaldi.sh           # rebuild
+./patch-vivaldi.sh --uninstall
+```
+
+**What works in Vivaldi after patching:** Full Claude interface, Claude Desktop native messaging, chat, and page context for the bound tab.
+
+**Caveat:** the panel reads the tab binding once, when the panel document loads. Reload the Web Panel to re-bind it to the current tab.
+
+> The real fix belongs upstream — a third fallback branch in the panel's tab resolver would fix Vivaldi, Arc, and every other Chromium fork at once. See [docs/vivaldi-tab-binding.md](docs/vivaldi-tab-binding.md#upstream).
 
 ---
 
@@ -652,6 +704,8 @@ To find the correct path, open your browser and navigate to `chrome://version` �
 ```bash
 # Bash tests
 ./tests/test_setup.sh
+./tests/test_browser_detection.sh
+./tests/test_patch_vivaldi.sh
 
 # PowerShell tests
 .\tests\test_setup.ps1
