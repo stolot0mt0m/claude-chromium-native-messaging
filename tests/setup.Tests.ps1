@@ -72,6 +72,16 @@ BeforeAll {
 Describe 'Get-ClaudeNativeHostPath' {
 # ===========================================================================
 
+    BeforeEach {
+        # Default mocks so tests never touch the real machine. Pester 6 throws
+        # when no -ParameterFilter matches and no default mock exists; per-test
+        # filtered mocks below take precedence over these.
+        Mock Test-Path { $false }
+        if (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue) {
+            Mock Get-AppxPackage { $null }
+        }
+    }
+
     Context 'MSIX / Windows Store install (APPDATA path) — Issue #9' {
 
         It 'finds MSIX install at APPDATA\Claude\ChromeNativeHost path' {
@@ -107,7 +117,7 @@ Describe 'Get-ClaudeNativeHostPath' {
         It 'finds legacy install at LOCALAPPDATA\Claude path' {
             # Matches LOCALAPPDATA\Claude but NOT ChromeNativeHost (that would be MSIX)
             Mock Test-Path {
-                ($Path -like '*LOCALAPPDATA*Claude*chrome-native-host.exe') -and
+                ($Path -like "$env:LOCALAPPDATA\Claude\*chrome-native-host.exe") -and
                 ($Path -notlike '*ChromeNativeHost*') -and
                 ($Path -notlike '*Programs*')
             } -ParameterFilter { $Path -like '*chrome-native-host.exe' }
@@ -145,10 +155,32 @@ Describe 'Get-ClaudeNativeHostPath' {
         }
     }
 
+    Context 'MSIX install location (WindowsApps\...\app\resources)' {
+
+        It 'finds the host bundled in the Appx InstallLocation' -Skip:(-not (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue)) {
+            Mock Get-AppxPackage {
+                [pscustomobject]@{
+                    Version         = [version]'1.0.0.0'
+                    InstallLocation = 'C:\Program Files\WindowsApps\Claude_1.0.0.0_x64__testhash'
+                }
+            }
+            Mock Test-Path {
+                $Path -like '*WindowsApps*app\resources\chrome-native-host.exe'
+            } -ParameterFilter { $Path -like '*chrome-native-host.exe' }
+
+            $result = Get-ClaudeNativeHostPath
+
+            $result | Should -Match ([regex]::Escape('WindowsApps\Claude_1.0.0.0_x64__testhash\app\resources\chrome-native-host.exe'))
+        }
+    }
+
     Context 'No Claude installation' {
 
         It 'returns null when no Claude installation is found' {
             Mock Test-Path { $false } -ParameterFilter { $Path -like '*chrome-native-host.exe' }
+            if (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue) {
+                Mock Get-AppxPackage { $null }
+            }
 
             $result = Get-ClaudeNativeHostPath
 

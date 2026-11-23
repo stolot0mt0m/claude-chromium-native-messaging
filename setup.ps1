@@ -175,6 +175,24 @@ function Get-ClaudeNativeHostPath {
         }
     }
 
+    # Fallback: binary bundled inside the MSIX install location
+    # (C:\Program Files\WindowsApps\Claude_<version>_x64__<hash>\app\resources).
+    # Present even before Claude Desktop has copied the host to ChromeNativeHost.
+    # NOTE: this path contains the app version, so it changes on every update.
+    if (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue) {
+        $appx = Get-AppxPackage -Name "Claude" -ErrorAction SilentlyContinue |
+            Sort-Object Version -Descending |
+            Select-Object -First 1
+        if ($appx -and $appx.InstallLocation) {
+            $appxPath = Join-Path $appx.InstallLocation "app\resources\chrome-native-host.exe"
+            if (Test-Path $appxPath) {
+                Write-VerboseMessage "Found Claude Desktop (MSIX install location) at: $appxPath"
+                $script:NativeHostIsVersioned = $true
+                return $appxPath
+            }
+        }
+    }
+
     return $null
 }
 
@@ -643,6 +661,10 @@ if (-not $nativeHostPath) {
     exit 1
 }
 Write-SuccessMessage "Found Claude Desktop native host: $nativeHostPath"
+if ($script:NativeHostIsVersioned) {
+    Write-WarningMessage "This path is inside the versioned MSIX install folder and will change when Claude Desktop updates."
+    Write-InfoMessage "Re-run this script after each Claude Desktop update."
+}
 
 $codeNativeHostPath = Get-ClaudeCodeNativeHostPath
 if (Test-Path $codeNativeHostPath) {
